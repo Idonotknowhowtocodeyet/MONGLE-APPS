@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MONGLE_OS</title>
+<link id="fav" rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23000' width='100' height='100'/%3E%3Ctext y='75' x='50' text-anchor='middle' fill='%2300ff41' font-family='monospace' font-size='60' font-weight='bold'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+:root{--g:#00ff41;--bg:#000}
+*{box-sizing:border-box}
+body,html{margin:0;padding:0;width:100%;height:100%;background:#000;color:var(--g);font-family:'Share Tech Mono',monospace;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0a0a0a}::-webkit-scrollbar-thumb{background:#00ff4140;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--g)}
+
+/* ── BOOT ── */
+#boot{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#boot h1{font-size:58px;letter-spacing:12px;text-shadow:0 0 30px #00ff41,0 0 60px #00ff4155;margin:0;animation:gin .6s ease both}
+#bs{color:#1a3a1a;letter-spacing:6px;font-size:11px;margin-top:14px;animation:fup .8s .3s both}
+#bb{width:220px;height:2px;background:#0a0a0a;border-radius:1px;overflow:hidden;margin-top:12px;animation:fup .8s .5s both}
+#bf{height:100%;background:var(--g);width:0;animation:bload 1.5s .5s ease forwards;box-shadow:0 0 8px var(--g)}
+@keyframes gin{0%{opacity:0;transform:scaleX(1.08);filter:blur(8px)}100%{opacity:1;transform:scaleX(1);filter:none}}
+@keyframes fup{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bload{to{width:100%}}
+
+/* ── APP ── */
+#app{display:none;height:100vh;flex-direction:column}
+#app::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.011) 2px,rgba(0,255,65,.011) 4px);pointer-events:none;z-index:9999}
+
+/* ── NAV ── */
+nav{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(4,4,4,.97);border-bottom:1px solid rgba(0,255,65,.09);position:sticky;top:0;z-index:200;backdrop-filter:blur(16px);flex-wrap:wrap}
+.brand{font-size:19px;font-weight:bold;letter-spacing:3px;text-shadow:0 0 10px #00ff4166;white-space:nowrap;flex-shrink:0}
+.brand em{font-style:normal;font-size:9px;color:#2a2a2a;letter-spacing:2px;margin-left:7px;vertical-align:middle}
+#search{flex-grow:1;min-width:140px;max-width:680px;background:#000;border:1px solid #1e1e1e;color:var(--g);padding:8px 13px;outline:none;border-radius:4px;font-family:inherit;font-size:12px;transition:.15s}
+#search:focus{border-color:#00ff4155;box-shadow:0 0 10px #00ff4112}
+.nav-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:pulse 2s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#online-txt{font-size:11px;color:#444}
+#total-txt{font-size:10px;color:#2a2a2a}
+.nbtn{background:#0a0a0a;border:1px solid #1e1e1e;color:var(--g);padding:7px 11px;cursor:pointer;border-radius:4px;font-family:inherit;font-size:10px;letter-spacing:1px;transition:.15s;white-space:nowrap}
+.nbtn:hover{border-color:#00ff4155;background:#0d1a0d}
+
+/* ── GRID WRAPPER ── */
+#grid-wrap{flex-grow:1;overflow-y:auto;padding:14px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;align-content:start}
+
+/* ── CARD ── */
+.card{background:#070707;border:1px solid #1a1a1a;padding:15px 11px;text-align:center;cursor:pointer;border-radius:5px;transition:all .13s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:76px;user-select:none;animation:cin .18s ease both}
+@keyframes cin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card:hover{border-color:var(--g);background:#09180a;transform:translateY(-2px);box-shadow:0 4px 16px #00ff4112}
+.cn{font-weight:bold;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;line-height:1.35}
+.ch{font-size:9px;color:#222;margin-top:4px;letter-spacing:1px}
+
+/* ── SENTINEL (infinite scroll trigger) ── */
+#sentinel{height:40px;grid-column:1/-a}
+
+/* ── STATE MSG ── */
+.msg{grid-column:1/-1;text-align:center;padding:50px 20px;font-size:12px;color:#2a2a2a;letter-spacing:2px}
+.msg b{display:block;font-size:20px;margin-bottom:10px;color:#333}
+
+/* ── SETTINGS PANEL ── */
+#settings{position:fixed;top:0;right:-360px;width:340px;height:100vh;background:rgba(4,4,4,.97);border-left:1px solid rgba(0,255,65,.12);z-index:500;display:flex;flex-direction:column;transition:right .25s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(24px)}
+#settings.open{right:0}
+.sp-head{padding:16px 18px;border-bottom:1px solid #111;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.sp-head h3{margin:0;font-size:14px;letter-spacing:3px;color:var(--g);text-shadow:0 0 10px #00ff4155}
+.sp-close{background:none;border:none;color:#444;font-size:20px;cursor:pointer;transition:.15s;line-height:1}
+.sp-close:hover{color:var(--g)}
+.sp-body{padding:16px 18px;overflow-y:auto;flex-grow:1;display:flex;flex-direction:column;gap:20px}
+.sp-section label{display:block;font-size:9px;color:#333;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+.sp-section h4{font-size:11px;color:#555;letter-spacing:2px;margin:0 0 10px;font-weight:normal}
+
+/* toggle row */
+.opt-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0d0d0d}
+.opt-row:last-child{border-bottom:none}
+.opt-label{font-size:11px;color:#888;letter-spacing:.5px}
+.opt-sub{font-size:9px;color:#333;margin-top:2px}
+
+/* cloak toggle */
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:#111;border:1px solid #2a2a2a;border-radius:10px;cursor:pointer;transition:.2s}
+.toggle input:checked+.toggle-track{background:#003b00;border-color:#00ff4166}
+.toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:12px;height:12px;background:#333;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-track::after{background:var(--g);left:19px}
+
+/* cloak presets */
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.preset{background:#0a0a0a;border:1px solid #1a1a1a;color:#666;padding:8px 10px;border-radius:4px;cursor:pointer;font-size:10px;font-family:inherit;transition:.15s;text-align:left;letter-spacing:.5px}
+.preset:hover{border-color:#00ff4133;color:#aaa}
+.preset.active{border-color:var(--g);color:var(--g);background:#091509}
+
+/* open mode radio */
+.radio-group{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.radio-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #1a1a1a;border-radius:4px;cursor:pointer;transition:.15s}
+.radio-opt:hover{border-color:#00ff4133}
+.radio-opt.active{border-color:var(--g);background:#09180a}
+.radio-opt input{display:none}
+.radio-dot{width:8px;height:8px;border-radius:50%;border:1px solid #444;flex-shrink:0;transition:.15s}
+.radio-opt.active .radio-dot{background:var(--g);border-color:var(--g)}
+.radio-label{font-size:11px;color:#666}
+.radio-opt.active .radio-label{color:var(--g)}
+
+/* custom cloak inputs */
+.inp{background:#000;border:1px solid #1a1a1a;color:var(--g);padding:8px 11px;width:100%;outline:none;border-radius:4px;font-family:inherit;font-size:11px;transition:.15s;margin-top:4px}
+.inp:focus{border-color:#00ff4155}
+
+/* ── GAME OVERLAY (iframe mode) ── */
+#game-overlay{position:fixed;inset:0;background:#000;z-index:10000;display:none;flex-direction:column}
+#game-overlay.open{display:flex}
+#overlay-bar{display:flex;align-items:center;gap:10px;padding:6px 12px;background:#050505;border-bottom:1px solid #111;flex-shrink:0}
+#overlay-title{font-size:12px;color:#555;letter-spacing:1px;flex-grow:1}
+.ov-btn{background:none;border:1px solid #1a1a1a;color:#555;padding:5px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;transition:.15s}
+.ov-btn:hover{border-color:#00ff4133;color:var(--g)}
+#game-frame{flex-grow:1;border:none;background:#000}
+
+/* ── REQUEST MODAL ── */
+#req-modal{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:8000;display:none;align-items:center;justify-content:center}
+#req-modal.open{display:flex}
+.req-card{background:#050505;border:1px solid rgba(0,255,65,.15);padding:28px;border-radius:8px;width:380px;max-width:92vw;animation:fup .2s ease both}
+.req-card h2{color:var(--g);margin:0 0 18px;font-size:16px;letter-spacing:2px}
+.req-inp{background:#000;border:1px solid #1e1e1e;color:var(--g);padding:10px 13px;width:100%;outline:none;border-radius:4px;font-family:inherit;font-size:12px;margin-bottom:10px;transition:.15s}
+.req-inp:focus{border-color:#00ff4155}
+.req-ta{resize:vertical;min-height:72px}
+.req-btn{background:var(--g);color:#000;border:none;padding:11px;width:100%;cursor:pointer;border-radius:4px;font-family:inherit;font-weight:bold;font-size:12px;letter-spacing:1px;transition:.15s}
+.req-btn:hover{opacity:.85}
+#req-status{font-size:10px;color:#444;text-align:center;margin-top:8px;letter-spacing:1px;min-height:16px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);background:#091509;border:1px solid rgba(0,255,65,.25);color:var(--g);padding:9px 18px;border-radius:5px;font-size:11px;letter-spacing:1px;z-index:99999;opacity:0;transition:all .25s;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:600px){
+  nav{padding:7px 10px;gap:7px}
+  .brand{font-size:15px}
+  #grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  #grid-wrap{padding:10px}
+  #settings{width:100%;right:-100%}
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+  <h1>MONGLE_OS</h1>
+  <div id="bs">v10.0 — INITIALIZING</div>
+  <div id="bb"><div id="bf"></div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav>
+    <div class="brand">MONGLE_OS <em>v10</em></div>
+    <input id="search" type="text" placeholder="🔍 Search games..." autocomplete="off">
+    <div class="nav-right">
+      <span class="dot"></span>
+      <span id="online-txt">-- online</span>
+      <span id="total-txt"></span>
+      <button class="nbtn" onclick="openReq()">📬 REQUEST</button>
+      <button class="nbtn" onclick="toggleSettings()">⚙ SETTINGS</button>
+    </div>
+  </nav>
+  <div id="grid-wrap">
+    <div id="grid">
+      <div class="msg"><b>◌</b>LOADING GAMES...</div>
+    </div>
+    <!-- infinite scroll sentinel -->
+    <div id="sentinel"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings">
+  <div class="sp-head">
+    <h3>⚙ SETTINGS</h3>
+    <button class="sp-close" onclick="toggleSettings()">✕</button>
+  </div>
+  <div class="sp-body">
+
+    <!-- OPEN MODE -->
+    <div class="sp-section">
+      <h4>OPEN GAMES AS</h4>
+      <div class="radio-group" id="open-mode-group">
+        <label class="radio-opt active" data-mode="tab">
+          <input type="radio" name="mode" value="tab" checked>
+          <div class="radio-dot"></div>
+          <span class="radio-label">New Tab (githack direct)</span>
+        </label>
+        <label class="radio-opt" data-mode="iframe">
+          <input type="radio" name="mode" value="iframe">
+          <div class="radio-dot"></div>
+          <span class="radio-label">In-site Iframe</span>
+        </label>
+        <label class="radio-opt" data-mode="about">
+          <input type="radio" name="mode" value="about">
+          <div class="radio-dot"></div>
+          <span class="radio-label">About:blank Cloak</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- TAB CLOAK -->
+    <div class="sp-section">
+      <h4>TAB CLOAK</h4>
+      <div class="opt-row">
+        <div>
+          <div class="opt-label">Enable cloak</div>
+          <div class="opt-sub">Hides tab title + icon</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="cloak-toggle" onchange="applyCloak()">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+      <div id="cloak-opts" style="display:none;margin-top:10px">
+        <label style="font-size:9px;color:#333;letter-spacing:2px;display:block;margin-bottom:8px">PRESET</label>
+        <div class="preset-grid" id="preset-grid">
+          <button class="preset" onclick="setPreset('Google Docs','https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico')">📄 Google Docs</button>
+          <button class="preset" onclick="setPreset('Khan Academy','https://cdn.kastatic.org/images/favicon.ico')">🎓 Khan Academy</button>
+          <button class="preset" onclick="setPreset('Google Classroom','https://ssl.gstatic.com/classroom/favicon.png')">📚 Classroom</button>
+          <button class="preset" onclick="setPreset('Scratch','https://scratch.mit.edu/favicon.ico')">🐱 Scratch</button>
+        </div>
+        <label style="font-size:9px;color:#333;letter-spacing:2px;display:block;margin:12px 0 4px">CUSTOM TITLE</label>
+        <input id="cloak-title" class="inp" placeholder="Tab title..." oninput="applyCloak()">
+        <label style="font-size:9px;color:#333;letter-spacing:2px;display:block;margin:10px 0 4px">CUSTOM FAVICON URL</label>
+        <input id="cloak-fav" class="inp" placeholder="https://..." oninput="applyCloak()">
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- GAME OVERLAY (iframe mode) -->
+<div id="game-overlay">
+  <div id="overlay-bar">
+    <span id="overlay-title">—</span>
+    <button class="ov-btn" onclick="openNewTab()">↗ NEW TAB</button>
+    <button class="ov-btn" onclick="closeOverlay()">✕ CLOSE</button>
+  </div>
+  <iframe id="game-frame" allowfullscreen allow="fullscreen"></iframe>
+</div>
+
+<!-- REQUEST MODAL -->
+<div id="req-modal">
+  <div class="req-card">
+    <h2>📬 REQUEST A GAME</h2>
+    <input id="req-name" class="req-inp" placeholder="Game name..." maxlength="80">
+    <textarea id="req-detail" class="req-inp req-ta" placeholder="Any details? (optional)" maxlength="300"></textarea>
+    <button class="req-btn" onclick="submitReq()">SUBMIT REQUEST</button>
+    <div id="req-status"></div>
+    <button onclick="closeReq()" style="background:none;border:none;color:#333;cursor:pointer;font-family:inherit;font-size:10px;width:100%;margin-top:6px;letter-spacing:1px">CANCEL</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, onDisconnect }
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+// ════════════════════════════════════════════════
+//  FIREBASE
+// ════════════════════════════════════════════════
+const db = getDatabase(initializeApp({
+    apiKey:"AIzaSyDGwa_5InnMoKUpVBT9x-nFzBUFHGf3C-Y",
+    authDomain:"mongle-af768.firebaseapp.com",
+    databaseURL:"https://mongle-af768-default-rtdb.firebaseio.com",
+    projectId:"mongle-af768",
+    storageBucket:"mongle-af768.firebasestorage.app",
+    messagingSenderId:"190331577532",
+    appId:"1:190331577532:web:e5f3ced220dac11ddb9cb9"
+}));
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+let ALL   = [];        // full sorted game list
+let shown = [];        // current filtered list
+let rendered = 0;      // how many cards are in the DOM
+const BATCH = 60;      // cards per render batch
+let currentUrl = '';   // for overlay new-tab button
+let openMode   = localStorage.getItem('openMode') || 'tab';
+
+// ════════════════════════════════════════════════
+//  BOOT — pure animation, no interaction
+// ════════════════════════════════════════════════
+setTimeout(() => {
+    document.getElementById('boot').style.display = 'none';
+    document.getElementById('app').style.display  = 'flex';
+    initPresence();
+    loadGames();
+    restoreSettings();
+}, 1900);
+
+// ════════════════════════════════════════════════
+//  PRESENCE
+// ════════════════════════════════════════════════
+function initPresence() {
+    let id = localStorage.getItem('mgid');
+    if (!id) { id = Math.random().toString(36).slice(2,12); localStorage.setItem('mgid',id); }
+    const r = ref(db,`presence/${id}`);
+    const ping = () => set(r,{on:true,t:Date.now()});
+    ping();
+    onDisconnect(r).remove();
+    onValue(ref(db,'presence'), snap => {
+        let n = 0, now = Date.now();
+        snap.forEach(c => { const v=c.val(); if(v?.on && now-(v.t||0)<300000) n++; });
+        document.getElementById('online-txt').textContent = n+' online';
+    });
+    setInterval(ping, 90000);
+}
+
+// ════════════════════════════════════════════════
+//  LOAD GAMES — git/trees API (no 1000-cap)
+// ════════════════════════════════════════════════
+async function loadGames() {
+    try {
+        // git/trees returns entire root tree without the /contents/ 1000-item cap
+        const r   = await fetch('https://api.github.com/repos/Idonotknowhowtocodeyet/mongles-pull-games/git/trees/main');
+        const d   = await r.json();
+        if (!d.tree) throw new Error(d.message || 'No tree in response');
+
+        const htmlFiles = d.tree.filter(f => f.type==='blob' && f.path.endsWith('.html') && !f.path.includes('/'));
+
+        if (!htmlFiles.length) throw new Error('No HTML files found in repo root');
+
+        ALL = htmlFiles.map(f => {
+            const raw = f.path.replace(/\.html?$/i,'');
+            const name = raw.replace(/[-_]+/g,' ').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/\b\w/g,c=>c.toUpperCase()).trim();
+            return {
+                name,
+                nameLow: name.toLowerCase(),   // pre-built for fast search
+                url: `https://raw.githack.com/Idonotknowhowtocodeyet/mongles-pull-games/main/${f.path}`
+            };
+        }).sort((a,b) => a.name.localeCompare(b.name));
+
+        shown = ALL;
+        document.getElementById('total-txt').textContent = ALL.length+' games';
+
+        // Render first batch NOW, rest trickle in
+        resetGrid();
+        renderBatch();
+
+        // Merge Firebase extras
+        onValue(ref(db,'games'), snap => {
+            if (!snap.exists()) return;
+            const extras = [];
+            snap.forEach(c => {
+                const g = c.val();
+                if (!g?.url || !g?.name) return;
+                let u = g.url.replace(/https?:\/\/poxel\.io\//i,'https://raw.githack.com/');
+                const n = g.name;
+                if (!ALL.find(x => x.url===u)) extras.push({name:n,nameLow:n.toLowerCase(),url:u});
+            });
+            if (!extras.length) return;
+            ALL = [...ALL,...extras].sort((a,b)=>a.name.localeCompare(b.name));
+            const s = document.getElementById('search').value.toLowerCase().trim();
+            shown = s ? ALL.filter(g=>g.nameLow.includes(s)) : ALL;
+            document.getElementById('total-txt').textContent = shown.length+' games';
+            resetGrid();
+            renderBatch();
+        });
+
+    } catch(e) {
+        document.getElementById('grid').innerHTML =
+            `<div class="msg"><b>⚠️</b>${esc(e.message)}</div>`;
+        console.error(e);
+    }
+}
+
+// ════════════════════════════════════════════════
+//  VIRTUAL / PROGRESSIVE RENDERING
+//  — renders cards in batches via requestIdleCallback
+//  — IntersectionObserver loads more when sentinel visible
+// ════════════════════════════════════════════════
+function resetGrid() {
+    rendered = 0;
+    document.getElementById('grid').innerHTML = '';
+}
+
+function renderBatch() {
+    const grid  = document.getElementById('grid');
+    const start = rendered;
+    const end   = Math.min(start + BATCH, shown.length);
+
+    if (start >= shown.length) {
+        if (!shown.length) grid.innerHTML = '<div class="msg"><b>∅</b>NO GAMES FOUND</div>';
+        return;
+    }
+
+    // Build fragment — much faster than innerHTML concat
+    const frag = document.createDocumentFragment();
+    for (let i = start; i < end; i++) {
+        const g   = shown[i];
+        const div = document.createElement('div');
+        div.className   = 'card';
+        div.style.animationDelay = ((i - start) * 12) + 'ms';
+        div.innerHTML   = `<div class="cn">${esc(g.name)}</div><div class="ch">▶ play</div>`;
+        div.addEventListener('click', () => launch(g));
+        frag.appendChild(div);
+    }
+    grid.appendChild(frag);
+    rendered = end;
+}
+
+// IntersectionObserver — auto-loads next batch when sentinel scrolls into view
+const sentinel = document.getElementById('sentinel');
+new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && rendered < shown.length) {
+        // Small delay so it feels smooth, not jarring
+        requestIdleCallback ? requestIdleCallback(renderBatch,{timeout:200}) : setTimeout(renderBatch,50);
+    }
+}, { rootMargin:'200px' }).observe(sentinel);
+
+// ════════════════════════════════════════════════
+//  SEARCH — debounced 80ms, O(n) with pre-built nameLow
+// ════════════════════════════════════════════════
+let searchTimer;
+document.getElementById('search').addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        const s = e.target.value.toLowerCase().trim();
+        shown = s ? ALL.filter(g => g.nameLow.includes(s)) : ALL;
+        document.getElementById('total-txt').textContent = shown.length+' games';
+        resetGrid();
+        renderBatch();
+    }, 80);
+});
+
+// ════════════════════════════════════════════════
+//  LAUNCH GAME — respects open mode setting
+// ════════════════════════════════════════════════
+function launch(g) {
+    if (openMode === 'iframe') {
+        openOverlay(g.url, g.name);
+    } else if (openMode === 'about') {
+        openAboutBlank(g.url);
+    } else {
+        window.open(g.url, '_blank');
+    }
+}
+
+function openOverlay(url, title) {
+    currentUrl = url;
+    document.getElementById('overlay-title').textContent = title;
+    document.getElementById('game-frame').src = url;
+    document.getElementById('game-overlay').classList.add('open');
+}
+
+function openAboutBlank(url) {
+    const w = window.open('about:blank','_blank');
+    if (!w) { showToast('Pop-up blocked — allow pop-ups for about:blank mode'); return; }
+    w.document.open();
+    w.document.write(
+        `<!DOCTYPE html><html><head><style>*{margin:0;padding:0;overflow:hidden}</style></head>` +
+        `<body><iframe src="${url}" style="width:100vw;height:100vh;border:none"></iframe></body></html>`
+    );
+    w.document.close();
+}
+
+window.openNewTab  = () => window.open(currentUrl,'_blank');
+window.closeOverlay = () => {
+    document.getElementById('game-overlay').classList.remove('open');
+    document.getElementById('game-frame').src = 'about:blank';
+    currentUrl = '';
+};
+
+// ════════════════════════════════════════════════
+//  SETTINGS
+// ════════════════════════════════════════════════
+window.toggleSettings = () => document.getElementById('settings').classList.toggle('open');
+
+// Open mode radio
+document.getElementById('open-mode-group').addEventListener('click', e => {
+    const opt = e.target.closest('[data-mode]');
+    if (!opt) return;
+    openMode = opt.dataset.mode;
+    localStorage.setItem('openMode', openMode);
+    document.querySelectorAll('#open-mode-group .radio-opt').forEach(el =>
+        el.classList.toggle('active', el.dataset.mode === openMode)
+    );
+});
+
+// Tab cloak
+window.applyCloak = () => {
+    const enabled = document.getElementById('cloak-toggle').checked;
+    document.getElementById('cloak-opts').style.display = enabled ? 'block' : 'none';
+    if (enabled) {
+        const t   = document.getElementById('cloak-title').value || 'Google Docs';
+        const fav = document.getElementById('cloak-fav').value;
+        document.title = t;
+        if (fav) {
+            const f = document.getElementById('fav');
+            f.href = fav;
+        }
+        localStorage.setItem('cloak','1');
+        localStorage.setItem('cloakTitle', document.getElementById('cloak-title').value);
+        localStorage.setItem('cloakFav',   fav);
+    } else {
+        document.title = 'MONGLE_OS';
+        document.getElementById('fav').href = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Crect fill=\'%23000\' width=\'100\' height=\'100\'/%3E%3Ctext y=\'75\' x=\'50\' text-anchor=\'middle\' fill=\'%2300ff41\' font-family=\'monospace\' font-size=\'60\' font-weight=\'bold\'%3EM%3C/text%3E%3C/svg%3E';
+        localStorage.removeItem('cloak');
+    }
+};
+
+window.setPreset = (title, favUrl) => {
+    document.getElementById('cloak-title').value = title;
+    document.getElementById('cloak-fav').value   = favUrl;
+    document.querySelectorAll('.preset').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    applyCloak();
+};
+
+function restoreSettings() {
+    // Restore open mode
+    document.querySelectorAll('#open-mode-group .radio-opt').forEach(el =>
+        el.classList.toggle('active', el.dataset.mode === openMode)
+    );
+
+    // Restore cloak
+    if (localStorage.getItem('cloak')) {
+        document.getElementById('cloak-toggle').checked = true;
+        document.getElementById('cloak-title').value    = localStorage.getItem('cloakTitle') || '';
+        document.getElementById('cloak-fav').value      = localStorage.getItem('cloakFav')   || '';
+        applyCloak();
+    }
+}
+
+// ════════════════════════════════════════════════
+//  GAME REQUEST
+// ════════════════════════════════════════════════
+window.openReq  = () => document.getElementById('req-modal').classList.add('open');
+window.closeReq = () => {
+    document.getElementById('req-modal').classList.remove('open');
+    document.getElementById('req-status').textContent = '';
+};
+
+window.submitReq = async () => {
+    const name   = document.getElementById('req-name').value.trim();
+    const detail = document.getElementById('req-detail').value.trim();
+    const status = document.getElementById('req-status');
+    if (!name) { showToast('Enter a game name'); return; }
+    status.textContent = 'Sending...'; status.style.color='#555';
+    try {
+        await push(ref(db,'requests'), {
+            game:name, details:detail||'—',
+            t:Date.now()
+        });
+        status.textContent='✅ Request sent!'; status.style.color='var(--g)';
+        document.getElementById('req-name').value='';
+        document.getElementById('req-detail').value='';
+        setTimeout(closeReq, 1800);
+    } catch(e) {
+        status.textContent='❌ '+e.message; status.style.color='#ff4757';
+    }
+};
+
+// Close request modal on outside click
+document.getElementById('req-modal').addEventListener('click', e => {
+    if (e.target===document.getElementById('req-modal')) closeReq();
+});
+
+// ════════════════════════════════════════════════
+//  TOAST
+// ════════════════════════════════════════════════
+window.showToast = msg => {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'),2800);
+};
+
+// ════════════════════════════════════════════════
+//  UTIL
+// ════════════════════════════════════════════════
+function esc(t){ const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
+</script>
+</body>
+</html>

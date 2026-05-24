@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MONGLE_OS — TEMP MAIL</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g:#00ff41;--g2:#00cc33;--g3:#008822;--g4:#004411;
+  --bg:#000;--bg1:#030a03;--bg2:#060f06;--bg3:#0a160a;
+  --dim:#005511;--dim2:#009922;--dim3:#00bb33;
+  --glow:0 0 10px #00ff4188,0 0 30px #00ff4133;
+  --glow-sm:0 0 6px #00ff4166;
+  --border:#00ff4122;--border2:#00ff4155;--border3:#00ff4188;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--g);font-family:'Share Tech Mono',monospace;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,65,.012) 2px,rgba(0,255,65,.012) 4px);pointer-events:none;z-index:9999}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,.5) 100%);pointer-events:none;z-index:9998}
+
+/* BOOT */
+#boot{position:fixed;inset:0;background:#000;z-index:9997;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:12px;letter-spacing:1px;transition:opacity .5s}
+#boot.hidden{opacity:0;pointer-events:none}
+.boot-line{color:var(--dim3);opacity:0;animation:bl .1s forwards}
+@keyframes bl{to{opacity:1}}
+.boot-logo{font-family:'Orbitron',monospace;font-size:30px;font-weight:900;color:var(--g);text-shadow:var(--glow);letter-spacing:6px;margin-bottom:18px}
+.boot-bar-wrap{width:320px;height:3px;background:var(--bg3);border:1px solid var(--border2);margin-top:14px;border-radius:1px}
+.boot-bar{height:100%;background:var(--g);width:0;transition:width .08s;box-shadow:var(--glow-sm);border-radius:1px}
+
+/* HEADER */
+header{background:var(--bg1);border-bottom:1px solid var(--border2);padding:9px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;z-index:10}
+.logo{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;color:var(--g);text-shadow:var(--glow-sm);letter-spacing:3px}
+.logo-sub{font-size:9px;color:var(--dim3);letter-spacing:5px;margin-top:2px;font-family:'Share Tech Mono',monospace}
+.hstats{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:10px;color:var(--dim3)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:var(--glow-sm);animation:blink 2s infinite;display:inline-block;flex-shrink:0}
+.dot.amber{background:#ffaa00;box-shadow:0 0 5px #ffaa0099}
+.dot.red{background:#ff4444;box-shadow:0 0 5px #ff444499;animation:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
+#clock{font-family:'Orbitron',monospace;font-size:12px;color:var(--g);text-shadow:var(--glow-sm)}
+
+/* PROVIDER TABS */
+.pbar{background:var(--bg1);border-bottom:1px solid var(--border);padding:0 16px;display:flex;gap:0;flex-shrink:0;overflow-x:auto}
+.pbar::-webkit-scrollbar{height:2px}
+.pbar::-webkit-scrollbar-thumb{background:var(--g4)}
+.ptab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--dim2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:9px 13px;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s;white-space:nowrap}
+.ptab:hover{color:var(--g)}
+.ptab.active{color:var(--g);border-bottom-color:var(--g);text-shadow:var(--glow-sm)}
+.pbadge{font-size:8px;background:var(--bg3);border:1px solid var(--border);color:var(--dim3);padding:1px 5px;border-radius:8px;margin-left:4px;vertical-align:middle}
+.ptab.active .pbadge{border-color:var(--g3);color:var(--g);background:var(--g4)}
+.pbadge.live{border-color:#00ff4144;color:var(--g)}
+.pbadge.dead{border-color:#ff444444;color:#ff4444;background:#1a0000}
+.ptab.dead{color:#ff444466}
+.ptab.dead:hover{color:#ff4444}
+.ptab.dead.active{color:#ff4444;border-bottom-color:#ff4444;text-shadow:0 0 6px #ff444466}
+
+/* PINFO */
+.pinfo-strip{background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 20px;font-size:10px;color:var(--dim3);flex-shrink:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pinfo-strip b{color:var(--g)}
+.domain-tags{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+.dtag{background:var(--bg);border:1px solid var(--border2);color:var(--dim3);font-size:9px;padding:2px 7px;border-radius:10px}
+.dtag.live{border-color:var(--border3);color:var(--g)}
+
+/* WORKSPACE */
+.workspace{flex:1;display:grid;grid-template-columns:330px 1fr;overflow:hidden;min-height:0}
+.left-col{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:var(--bg1)}
+.left-col::-webkit-scrollbar{width:3px}
+.left-col::-webkit-scrollbar-thumb{background:var(--g4)}
+.right-col{display:flex;flex-direction:column;overflow:hidden}
+
+/* ADDR CARD */
+.addr-card{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sec-label{font-size:9px;color:var(--dim3);letter-spacing:3px;margin-bottom:8px}
+.addr-box{background:var(--bg);border:1px solid var(--g);border-radius:2px;padding:10px 13px;margin-bottom:10px;position:relative;overflow:hidden}
+.addr-box::after{content:'';position:absolute;top:0;left:-50%;width:40%;height:1px;background:linear-gradient(90deg,transparent,var(--g),transparent);animation:sweep 4s infinite}
+@keyframes sweep{0%{left:-40%}100%{left:140%}}
+.addr-main{font-size:14px;color:#fff;text-shadow:0 0 14px #00ff41;word-break:break-all;line-height:1.4;min-height:20px}
+.addr-main.loading{color:var(--dim3);font-size:11px;text-shadow:none;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+.addr-meta{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:9px;margin-top:7px}
+.addr-meta .k{color:var(--dim3)}
+.addr-meta .v{color:var(--dim2)}
+.addr-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.addr-btns2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+
+/* TIMER */
+.timer-card{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.timer-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.timer-num{font-family:'Orbitron',monospace;font-size:24px;letter-spacing:3px;text-shadow:var(--glow);color:var(--g)}
+.timer-num.warn{color:#ffaa00;text-shadow:0 0 10px #ffaa0099}
+.timer-num.crit{color:#ff4444;text-shadow:0 0 10px #ff444499;animation:crit .5s infinite}
+@keyframes crit{0%,100%{opacity:1}50%{opacity:.2}}
+.timer-sub{font-size:9px;color:var(--dim3);letter-spacing:1.5px;line-height:1.8}
+.timer-bar{height:3px;background:var(--bg3);border-radius:1px;overflow:hidden}
+.timer-fill{height:100%;background:var(--g);box-shadow:0 0 6px var(--g);transition:width 1s linear,background .5s}
+.timer-fill.warn{background:#ffaa00;box-shadow:0 0 6px #ffaa00}
+.timer-fill.crit{background:#ff4444;box-shadow:0 0 6px #ff4444}
+.ext-btns{display:flex;gap:5px;margin-top:8px}
+
+/* TEST EMAIL */
+.test-card{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
+.test-card-title{font-size:9px;color:var(--dim3);letter-spacing:3px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.test-card-title::before{content:'⚡';color:var(--g)}
+.test-sending{font-size:10px;color:var(--dim3);letter-spacing:1px;animation:pulse 1s infinite;display:none}
+.test-log{font-size:9px;color:var(--dim3);margin-top:6px;line-height:1.8;max-height:80px;overflow-y:auto}
+.test-log .ok{color:var(--g)}
+.test-log .err{color:#ff4444}
+.test-log .info{color:var(--dim2)}
+
+/* SPECIAL PANELS */
+.special-card{padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;display:none}
+.domain-option{display:flex;align-items:center;justify-content:space-between;background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:7px 10px;font-size:10px;cursor:pointer;margin-bottom:5px;transition:border-color .2s}
+.domain-option:hover{border-color:var(--border3)}
+.domain-option .dname{color:var(--g)}
+.domain-option .dprov{color:var(--dim3);font-size:9px}
+.domain-option .dstatus{font-size:9px}
+.domain-option .dstatus.live{color:var(--g)}
+.domain-option .dstatus.manual{color:var(--dim2)}
+.domain-option .dstatus.warn{color:#ffaa00}
+input,select{background:var(--bg);border:1px solid var(--border2);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:11px;padding:7px 10px;border-radius:2px;width:100%;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus{border-color:var(--g);box-shadow:var(--glow-sm)}
+input::placeholder{color:var(--dim2)}
+select option{background:#000;color:var(--g)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.fl{font-size:9px;color:var(--dim3);letter-spacing:2px;margin-bottom:4px}
+
+/* MULTI */
+.multi-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.mini{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:9px 10px;cursor:pointer;transition:all .2s}
+.mini:hover{border-color:var(--border3)}
+.mini.active{border-color:var(--g);background:#001a05}
+.mini-prov{font-size:8px;color:var(--dim3);letter-spacing:2px;margin-bottom:3px}
+.mini-addr{font-size:9px;color:#bfb;word-break:break-all;line-height:1.4;margin-bottom:2px}
+.mini-st{font-size:8px}
+.mini-st.live{color:var(--g)}
+.mini-st.gen{color:var(--dim2)}
+
+/* STATUS */
+.sbar{padding:7px 16px;border-bottom:1px solid var(--border);font-size:10px;display:flex;align-items:center;gap:8px;min-height:32px;flex-shrink:0;color:var(--dim3)}
+.sbar.ok{color:var(--g)}
+.sbar.err{color:#ff4444}
+.spin{display:inline-block;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* INBOX HEADER */
+.inbox-hdr{padding:10px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0;background:var(--bg1)}
+.inbox-title{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;color:var(--g);text-shadow:var(--glow-sm)}
+.msg-badge{background:var(--bg3);border:1px solid var(--border2);color:var(--g);font-size:9px;padding:2px 8px;border-radius:10px;min-width:28px;text-align:center}
+.rring{width:13px;height:13px;border:1.5px solid var(--dim);border-top-color:var(--g);border-radius:50%;display:none}
+.rring.spin{display:block;animation:spin .8s linear infinite}
+.inbox-acts{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:9px;color:var(--dim3)}
+
+/* INBOX SCROLL */
+.inbox-scroll{flex:1;overflow-y:auto;padding:10px 12px;min-height:0}
+.inbox-scroll::-webkit-scrollbar{width:3px}
+.inbox-scroll::-webkit-scrollbar-thumb{background:var(--g4);border-radius:2px}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--dim2)}
+.empty-icon{font-size:44px;opacity:.18}
+.empty-lbl{font-size:11px;letter-spacing:3px}
+.empty-sub{font-size:9px;color:var(--dim);letter-spacing:1px;text-align:center;max-width:260px;line-height:1.8}
+
+/* MESSAGE LIST ITEM */
+.msg-item{background:var(--bg1);border:1px solid var(--border);border-radius:2px;margin-bottom:6px;cursor:pointer;transition:all .2s;overflow:hidden}
+.msg-item:hover{border-color:var(--border3);background:var(--bg2)}
+.msg-item.unread{border-left:3px solid var(--g);background:var(--bg2)}
+.msg-item.open{border-color:var(--g)}
+.msg-item.test-msg{border-left:3px solid #ffaa00}
+.msg-summary{padding:10px 13px;display:flex;gap:10px;align-items:flex-start}
+.msg-avatar{width:30px;height:30px;border-radius:2px;background:var(--bg3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--g);flex-shrink:0}
+.msg-info{flex:1;min-width:0}
+.msg-from{font-size:11px;color:var(--g);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.msg-subj{font-size:12px;color:#cfc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;font-weight:bold}
+.msg-snip{font-size:10px;color:var(--dim3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-ts{font-size:9px;color:var(--dim2);flex-shrink:0;text-align:right;padding-top:2px}
+.msg-tags{display:flex;gap:4px;margin-top:4px}
+.msg-tag{font-size:8px;padding:1px 5px;border-radius:8px;border:1px solid var(--border);color:var(--dim3)}
+.msg-tag.test{border-color:#ffaa0055;color:#ffaa00}
+.msg-tag.new{border-color:var(--border3);color:var(--g)}
+
+/* FULL EMAIL VIEWER */
+.msg-full{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.msg-item.open .msg-full{max-height:1400px}
+.email-viewer{border-top:1px solid var(--border);background:var(--bg)}
+
+/* EMAIL HEADER TABLE */
+.email-hdr-table{padding:12px 14px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:10px;background:var(--bg1)}
+.ehk{color:var(--dim3);letter-spacing:1px;white-space:nowrap;padding:3px 0;font-size:9px}
+.ehv{color:var(--g);padding:3px 0;word-break:break-word;font-size:11px}
+.ehv.subject{color:#fff;font-size:13px;font-weight:bold;text-shadow:0 0 8px #00ff4166;letter-spacing:.5px}
+.ehv.from-addr{color:var(--g2)}
+.ehv.to-addr{color:var(--dim3)}
+
+/* EMAIL BODY */
+.email-body-wrap{padding:14px;border-bottom:1px solid var(--border);max-height:420px;overflow-y:auto;background:var(--bg)}
+.email-body-wrap::-webkit-scrollbar{width:3px}
+.email-body-wrap::-webkit-scrollbar-thumb{background:var(--g4)}
+.email-body-text{font-size:11px;color:#ccc;line-height:1.9;white-space:pre-wrap;word-break:break-word;font-family:'Share Tech Mono',monospace}
+.email-body-loading{color:var(--dim3);font-size:10px;letter-spacing:2px;animation:pulse 1s infinite;padding:8px 0}
+.email-html-frame{width:100%;border:none;min-height:200px;max-height:420px;background:#fff;border-radius:2px;display:none}
+
+/* VIEW TOGGLE */
+.view-toggle{display:flex;gap:0;border:1px solid var(--border2);border-radius:2px;overflow:hidden}
+.vt{background:transparent;border:none;border-right:1px solid var(--border2);color:var(--dim3);font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px 10px;cursor:pointer;letter-spacing:1px;transition:all .2s}
+.vt:last-child{border-right:none}
+.vt.active{background:var(--g4);color:var(--g)}
+.vt:hover:not(.active){color:var(--g)}
+
+/* EMAIL ACTIONS */
+.email-acts{padding:8px 14px;display:flex;gap:7px;flex-wrap:wrap;background:var(--bg1);border-bottom:1px solid var(--border)}
+
+/* FOOTER */
+.inbox-footer{padding:6px 18px;border-top:1px solid var(--border);font-size:9px;color:var(--dim3);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--bg1);letter-spacing:.5px}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg2);border:1px solid var(--g);color:var(--g);font-size:11px;padding:9px 16px;border-radius:2px;letter-spacing:1px;z-index:9996;transform:translateY(16px);opacity:0;transition:all .3s;box-shadow:var(--glow-sm);pointer-events:none;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* BUTTONS */
+button{background:transparent;border:1px solid var(--border2);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:10px;padding:7px 12px;border-radius:2px;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;transition:all .2s;white-space:nowrap}
+button:hover{background:var(--g);color:#000;border-color:var(--g);box-shadow:var(--glow-sm)}
+button:active{transform:scale(.96)}
+button.primary{border-color:var(--g);box-shadow:0 0 4px #00ff4133}
+button.ghost{border-color:var(--border);color:var(--dim3)}
+button.ghost:hover{background:var(--bg3);color:var(--g);border-color:var(--border3);box-shadow:none}
+button.sm{padding:5px 9px;font-size:9px}
+button.danger:hover{background:#ff4444;border-color:#ff4444;color:#000;box-shadow:none}
+button.test-btn{border-color:#ffaa0066;color:#ffaa00}
+button.test-btn:hover{background:#ffaa00;color:#000;border-color:#ffaa00;box-shadow:0 0 8px #ffaa0066}
+
+/* WARNING BOX */
+.warn-box{background:#1a0e00;border:1px solid #ffaa0044;border-radius:2px;padding:8px 10px;font-size:10px;color:#ffaa00;line-height:1.7;margin-bottom:8px}
+.warn-box b{color:#ffd066}
+
+@media(max-width:700px){
+  .workspace{grid-template-columns:1fr}
+  .right-col{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="boot">
+  <div class="boot-logo">MONGLE_OS</div>
+  <div id="boot-lines" style="text-align:center;max-width:400px"></div>
+  <div class="boot-bar-wrap"><div class="boot-bar" id="bbar"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<header>
+  <div>
+    <div class="logo">MONGLE_OS</div>
+    <div class="logo-sub">TEMP MAIL SURFACE</div>
+  </div>
+  <div class="hstats">
+    <span><span class="dot" id="conn-dot"></span> <span id="conn-lbl">INIT</span></span>
+    <span><span class="dot amber"></span> ENCRYPTED</span>
+    <span id="clock">--:--:--</span>
+  </div>
+</header>
+
+<div class="pbar" id="ptabs">
+  <button class="ptab active" data-p="guerrilla">GUERRILLA MAIL<span class="pbadge live">✓ LIVE</span></button>
+  <button class="ptab" data-p="tempmail">TEMP-MAIL.IO<span class="pbadge live">✓ LIVE</span></button>
+  <button class="ptab" data-p="mailgw">MAIL.GW<span class="pbadge live">✓ LIVE</span></button>
+  <button class="ptab" data-p="maildrop">MAILDROP<span class="pbadge live">✓ LIVE</span></button>
+  <button class="ptab dead" data-p="outlook-style">OUTLOOK-STYLE<span class="pbadge dead">✗ NO INBOX</span></button>
+  <button class="ptab dead" data-p="gmail-style">GMAIL-STYLE<span class="pbadge dead">✗ NO INBOX</span></button>
+  <button class="ptab" data-p="yopmail">YOPMAIL<span class="pbadge live">✓ LIVE</span></button>
+  <button class="ptab" data-p="custom">CUSTOM<span class="pbadge">20+ DOMAINS</span></button>
+  <button class="ptab" data-p="multi">MULTI-BOX<span class="pbadge live">✓ 4×</span></button>
+</div>
+
+<div class="pinfo-strip">
+  <span id="pinfo-text">—</span>
+  <div class="domain-tags" id="domain-tags"></div>
+</div>
+
+<div class="workspace">
+  <div class="left-col">
+
+    <!-- ADDRESS -->
+    <div class="addr-card">
+      <div class="sec-label">ACTIVE ADDRESS</div>
+      <div class="addr-box">
+        <div class="addr-main loading" id="addr-text">INITIALIZING...</div>
+        <div class="addr-meta" id="addr-meta">
+          <span class="k">PROVIDER</span><span class="v" id="ad-prov">—</span>
+          <span class="k">DOMAIN</span><span class="v" id="ad-dom">—</span>
+          <span class="k">LIFETIME</span><span class="v" id="ad-life">—</span>
+          <span class="k">STATUS</span><span class="v" id="ad-stat">CONNECTING</span>
+        </div>
+      </div>
+      <div class="addr-btns">
+        <button class="primary" onclick="copyEmail()">⎘ COPY ADDRESS</button>
+        <button onclick="generateEmail()">↺ NEW ADDRESS</button>
+      </div>
+      <div class="addr-btns2">
+        <button class="ghost sm" onclick="shareEmail()">⬆ SHARE</button>
+        <button class="ghost sm" onclick="fetchInbox(true)">↻ REFRESH</button>
+        <button class="ghost sm danger" onclick="clearInbox()">✕ CLEAR</button>
+      </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="timer-card">
+      <div class="timer-row">
+        <div>
+          <div class="timer-num" id="tnum">10:00</div>
+          <div class="timer-sub">SESSION<br>AUTO-RENEW</div>
+        </div>
+        <div style="flex:1;padding:0 10px">
+          <div class="timer-bar"><div class="timer-fill" id="tfill" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div class="ext-btns">
+        <button class="ghost sm" onclick="extendTimer(300)">+5 MIN</button>
+        <button class="ghost sm" onclick="extendTimer(600)">+10 MIN</button>
+        <button class="ghost sm" onclick="extendTimer(1800)">+30 MIN</button>
+      </div>
+    </div>
+
+    <!-- OUTLOOK PANEL -->
+    <div class="special-card" id="outlook-panel">
+      <div class="sec-label">OUTLOOK-STYLE DOMAINS</div>
+      <div class="warn-box">
+        <b>NOTE:</b> Real @hotmail.com / @outlook.com addresses require Microsoft accounts. These providers give you <b>disposable addresses on similar-looking domains</b>, or Guerrilla Mail aliases registered under an outlook-ish username.
+      </div>
+      <div id="outlook-list"></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px">
+        <input id="ol-user" placeholder="username (blank=random)"/>
+        <button onclick="genOutlookStyle()">GENERATE</button>
+      </div>
+    </div>
+
+    <!-- GMAIL PANEL -->
+    <div class="special-card" id="gmail-panel">
+      <div class="sec-label">GMAIL-STYLE DOMAINS</div>
+      <div class="warn-box">
+        <b>NOTE:</b> Real @gmail.com requires a Google account. Providers below offer disposable addresses on domains that look similar, or Guerrilla Mail with a gmail-style username. No browser can receive real @gmail.com mail.
+      </div>
+      <div id="gmail-list"></div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px">
+        <input id="gm-user" placeholder="username (blank=random)"/>
+        <button onclick="genGmailStyle()">GENERATE</button>
+      </div>
+    </div>
+
+    <!-- YOPMAIL PANEL -->
+    <div class="special-card" id="yopmail-panel">
+      <div class="sec-label">YOPMAIL</div>
+      <div style="font-size:10px;color:var(--dim3);line-height:1.8;margin-bottom:10px">Yopmail addresses are <b style="color:var(--g)">permanent public inboxes</b>. Any <code style="color:var(--g)">username@yopmail.com</code> exists forever. Inbox is also viewable at <a href="https://yopmail.com" target="_blank" style="color:var(--g)">yopmail.com</a>.</div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px">
+        <input id="yop-user" placeholder="username"/>
+        <button onclick="genYopmail()">GENERATE</button>
+      </div>
+      <div style="font-size:9px;color:var(--dim3);margin-top:8px;line-height:1.7">Alternate domains: yopmail.fr · cool.fr.nf · jetable.fr.nf · nospam.ze.tc · nomail.xl.cx · mega.zik.dj</div>
+    </div>
+
+    <!-- CUSTOM PANEL -->
+    <div class="special-card" id="custom-panel">
+      <div class="sec-label">CUSTOM GENERATOR</div>
+      <div class="field-row">
+        <div><div class="fl">USERNAME</div><input id="cu-user" placeholder="blank = random"/></div>
+        <div><div class="fl">DOMAIN</div>
+          <select id="cu-dom">
+            <option>guerrillamail.com</option><option>sharklasers.com</option>
+            <option>grr.la</option><option>spam4.me</option>
+            <option>guerrillamailblock.com</option><option>yopmail.com</option>
+            <option>trashmail.com</option><option>mailnull.com</option>
+            <option>dispostable.com</option><option>throwam.com</option>
+            <option>fakeinbox.com</option><option>tempinbox.com</option>
+            <option>10minutemail.com</option><option>mailinator.com</option>
+            <option>maildrop.cc</option><option>getairmail.com</option>
+            <option>mintemail.com</option><option>trashmail.net</option>
+            <option>discard.email</option><option>spamgourmet.com</option>
+          </select>
+        </div>
+      </div>
+      <button style="width:100%" class="primary" onclick="setCustom()">GENERATE ADDRESS</button>
+    </div>
+
+    <!-- MULTI PANEL -->
+    <div class="special-card" id="multi-panel">
+      <div class="sec-label">MULTI-BOX — 4 SIMULTANEOUS</div>
+      <div class="multi-grid" id="multi-grid">
+        <div style="color:var(--dim3);font-size:10px;grid-column:1/-1;padding:8px;letter-spacing:2px">GENERATING...</div>
+      </div>
+      <button class="ghost" style="width:100%" onclick="genMulti()">↺ REGENERATE ALL</button>
+    </div>
+
+    <div class="sbar" id="sbar"><span class="spin">◌</span> <span>STARTING UP...</span></div>
+  </div>
+
+  <!-- RIGHT: INBOX -->
+  <div class="right-col">
+    <div class="inbox-hdr">
+      <span class="inbox-title">INBOX</span>
+      <span class="msg-badge" id="msg-count">0</span>
+      <div class="rring" id="rring"></div>
+      <div class="inbox-acts">
+        AUTO <span id="next-ref">15s</span>
+        <button class="ghost sm" onclick="fetchInbox(true)">↺ REFRESH</button>
+        <button class="ghost sm danger" onclick="clearInbox()">✕ CLEAR</button>
+      </div>
+    </div>
+
+    <div class="inbox-scroll" id="inbox">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-lbl">INBOX EMPTY</div>
+        <div class="empty-sub">Send an email to your address, then hit REFRESH — or use the ⚡ AI TEST Email button on the left to verify the inbox display works.</div>
+      </div>
+    </div>
+
+    <div class="inbox-footer">
+      <span class="dot" style="width:5px;height:5px"></span>
+      LIVE POLLING — NEXT REFRESH <span id="next-ref2">15s</span> — <span id="footer-addr" style="color:var(--dim2)">NO ADDRESS</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── BOOT ── */
+const BOOT=['MONGLE_OS v3.6.0 LOADING...','INITIALIZING MAIL ENGINE...','REGISTERING 9 PROVIDERS...','PATCHING INBOX FETCH LAYER...','READY.'];
+(async()=>{
+  let bl=document.getElementById('boot-lines'),bar=document.getElementById('bbar');
+  for(let i=0;i<BOOT.length;i++){
+    await wait(200);
+    let d=document.createElement('div');d.className='boot-line';d.textContent='> '+BOOT[i];bl.appendChild(d);
+    bar.style.width=((i+1)/BOOT.length*100)+'%';
+  }
+  await wait(350);
+  document.getElementById('boot').classList.add('hidden');
+  setTimeout(()=>document.getElementById('boot').remove(),600);
+})();
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+
+/* ── CLOCK ── */
+setInterval(()=>document.getElementById('clock').textContent=new Date().toLocaleTimeString(),1000);
+
+/* ── STATE ── */
+let provider='guerrilla', currentEmail='', sidToken='', seqNum=0;
+let timerMax=600, timeLeft=600, timerInt=null;
+let mailgwToken='', nextRefSec=15, refInt=null;
+let msgStore=[], testMsgStore=[];
+
+/* ── PROVIDER META ── */
+const PMETA={
+  guerrilla:{label:'GUERRILLA MAIL',life:'60 MIN',info:'Real API, no key. Stores sid_token for reliable inbox polling.',domains:['guerrillamail.com','sharklasers.com','grr.la','spam4.me','guerrillamailblock.com'],live:true},
+  tempmail:{label:'TEMP-MAIL.IO',life:'10 MIN',info:'REST API, no key. Full inbox polling by email address.',domains:['Various — randomly assigned'],live:true},
+  mailgw:{label:'MAIL.GW',life:'10 MIN',info:'Open REST API with real authenticated mailbox. Full To/From/Subject/Body.',domains:['mail.gw','mail.tm'],live:true},
+  maildrop:{label:'MAILDROP.CC',life:'PERMANENT',info:'Zero-setup. Any @maildrop.cc address exists automatically.',domains:['maildrop.cc'],live:true},
+  'outlook-style':{label:'OUTLOOK-STYLE',life:'VARIES',info:'Guerrilla Mail alias with hotmail-ish username, or similar-domain providers.',domains:['hotmail.com*','outlook.com*','live.com','msn.com'],live:false},
+  'gmail-style':{label:'GMAIL-STYLE',life:'VARIES',info:'Guerrilla Mail alias with gmail-ish username. True @gmail.com not possible in browser.',domains:['gmail.com*','googlemail.com*','gmail-style aliases'],live:false},
+  yopmail:{label:'YOPMAIL',life:'PERMANENT',info:'Permanent public inboxes. Any username@yopmail.com always exists.',domains:['yopmail.com','yopmail.fr','cool.fr.nf','nomail.xl.cx'],live:true},
+  custom:{label:'CUSTOM',life:'VARIES',info:'Pick any username and one of 20+ disposable domains.',domains:['mailinator.com','maildrop.cc','discard.email','trashmail.com','...'],live:false},
+  multi:{label:'MULTI-BOX',life:'MIXED',info:'4 addresses across providers simultaneously.',domains:['guerrillamail.com','temp-mail.io','sharklasers.com','spam4.me'],live:true}
+};
+
+/* ── TABS ── */
+document.getElementById('ptabs').addEventListener('click',e=>{
+  let b=e.target.closest('.ptab');if(!b)return;
+  document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  provider=b.dataset.p;updateProviderUI();
+  ['outlook-panel','gmail-panel','yopmail-panel','custom-panel','multi-panel'].forEach(id=>document.getElementById(id).style.display='none');
+  if(provider==='outlook-style'){document.getElementById('outlook-panel').style.display='block';renderOutlookList();return;}
+  if(provider==='gmail-style'){document.getElementById('gmail-panel').style.display='block';renderGmailList();return;}
+  if(provider==='yopmail'){document.getElementById('yopmail-panel').style.display='block';return;}
+  if(provider==='custom'){document.getElementById('custom-panel').style.display='block';return;}
+  if(provider==='multi'){document.getElementById('multi-panel').style.display='block';genMulti();return;}
+  generateEmail();
+});
+function updateProviderUI(){
+  let m=PMETA[provider]||{};
+  document.getElementById('pinfo-text').innerHTML=`<b>${m.label||provider}</b> — ${m.info||''}`;
+  document.getElementById('domain-tags').innerHTML=(m.domains||[]).slice(0,5).map(d=>`<span class="dtag${m.live?' live':''}">${d}</span>`).join('');
+}
+updateProviderUI();
+
+/* ── OUTLOOK DOMAINS ── */
+const OL_DOMAINS=[
+  {d:'sharklasers.com',label:'SHARKLASERS',prov:'Guerrilla Mail API',api:true,note:'Actual API — receives mail'},
+  {d:'guerrillamail.com',label:'GUERRILLA',prov:'Guerrilla Mail API',api:true,note:'Actual API — receives mail'},
+  {d:'grr.la',label:'GRR.LA',prov:'Guerrilla Mail API',api:true,note:'Actual API — receives mail'},
+  {d:'hotmail.com',label:'HOTMAIL',prov:'Guerrilla alias',api:false,note:'Username only — domain cosmetic'},
+  {d:'outlook.com',label:'OUTLOOK',prov:'Guerrilla alias',api:false,note:'Username only — domain cosmetic'},
+  {d:'live.com',label:'LIVE.COM',prov:'Manual',api:false,note:'No live API — display only'},
+];
+function renderOutlookList(){
+  document.getElementById('outlook-list').innerHTML=OL_DOMAINS.map((x,i)=>`
+    <div class="domain-option" onclick="pickOL(${i})">
+      <span class="dname">@${x.d}</span>
+      <span class="dprov">${x.prov}</span>
+      <span class="dstatus ${x.api?'live':'manual'}">${x.api?'● LIVE API':'● ALIAS ONLY'}</span>
+    </div>`).join('');
+}
+async function pickOL(i){
+  let x=OL_DOMAINS[i];
+  let user=document.getElementById('ol-user').value.trim()||rnd(10);
+  if(x.api){
+    try{
+      let r=await fetch(`https://api.guerrillamail.com/ajax.php?f=set_email_user&email_user=${encodeURIComponent(user)}&lang=en`);
+      let d=await r.json();sidToken=d.sid_token||sidToken;seqNum=0;
+      activateEmail(d.email_addr,'OUTLOOK-STYLE',d.email_addr.split('@')[1],'60 MIN');
+      startTimer(3600);startRefreshCycle();return;
+    }catch(e){}
+  }
+  activateEmail(user+'@'+x.d,'OUTLOOK-STYLE',x.d,'DISPLAY ONLY');
+  toast('⚠ '+x.d+' is cosmetic — no live inbox for this domain');
+}
+async function genOutlookStyle(){
+  let user=document.getElementById('ol-user').value.trim()||rnd(10);
+  try{
+    let r=await fetch(`https://api.guerrillamail.com/ajax.php?f=set_email_user&email_user=${encodeURIComponent(user)}&lang=en`);
+    let d=await r.json();sidToken=d.sid_token||sidToken;seqNum=0;
+    activateEmail(d.email_addr,'OUTLOOK-STYLE',d.email_addr.split('@')[1],'60 MIN');
+    startTimer(3600);startRefreshCycle();
+  }catch(e){activateEmail(user+'@hotmail.com','OUTLOOK-STYLE','hotmail.com','DISPLAY ONLY');}
+}
+
+/* ── GMAIL DOMAINS ── */
+const GM_DOMAINS=[
+  {d:'guerrillamail.com',label:'GUERRILLA',prov:'Guerrilla Mail API',api:true,note:'Real inbox — gmail-style username'},
+  {d:'sharklasers.com',label:'SHARKLASERS',prov:'Guerrilla Mail API',api:true,note:'Real inbox'},
+  {d:'spam4.me',label:'SPAM4.ME',prov:'Guerrilla Mail API',api:true,note:'Real inbox'},
+  {d:'gmail.com',label:'GMAIL.COM',prov:'Not possible',api:false,note:'⚠ Requires Google account',warn:true},
+  {d:'googlemail.com',label:'GOOGLEMAIL',prov:'Not possible',api:false,note:'⚠ Real Google domain',warn:true},
+];
+function renderGmailList(){
+  document.getElementById('gmail-list').innerHTML=GM_DOMAINS.map((x,i)=>`
+    <div class="domain-option" onclick="pickGM(${i})">
+      <span class="dname" style="${x.warn?'color:#ffaa00':''}">${x.warn?'⚠ ':''} @${x.d}</span>
+      <span class="dprov">${x.prov}</span>
+      <span class="dstatus ${x.warn?'warn':x.api?'live':'manual'}">${x.warn?'REAL DOMAIN':x.api?'● LIVE API':'● ALIAS'}</span>
+    </div>`).join('');
+}
+async function pickGM(i){
+  let x=GM_DOMAINS[i];
+  if(x.warn){toast('⚠ Real Google domain — impossible to receive mail here in a browser');return;}
+  let user=document.getElementById('gm-user').value.trim()||rnd(10);
+  if(x.api){
+    try{
+      let r=await fetch(`https://api.guerrillamail.com/ajax.php?f=set_email_user&email_user=${encodeURIComponent(user)}&lang=en`);
+      let d=await r.json();sidToken=d.sid_token||sidToken;seqNum=0;
+      activateEmail(d.email_addr,'GMAIL-STYLE',d.email_addr.split('@')[1],'60 MIN');
+      startTimer(3600);startRefreshCycle();return;
+    }catch(e){}
+  }
+}
+async function genGmailStyle(){
+  let user=document.getElementById('gm-user').value.trim()||rnd(10);
+  try{
+    let r=await fetch(`https://api.guerrillamail.com/ajax.php?f=set_email_user&email_user=${encodeURIComponent(user)}&lang=en`);
+    let d=await r.json();sidToken=d.sid_token||sidToken;seqNum=0;
+    activateEmail(d.email_addr,'GMAIL-STYLE',d.email_addr.split('@')[1],'60 MIN');
+    startTimer(3600);startRefreshCycle();
+  }catch(e){toast('⚠ API error — try Guerrilla Mail tab directly');}
+}
+
+/* ── YOPMAIL ── */
+async function genYopmail(){
+  let user=document.getElementById('yop-user').value.trim()||rnd(10);
+  activateEmail(user+'@yopmail.com','YOPMAIL','yopmail.com','PERMANENT');
+  startTimer(86400);startRefreshCycle();
+  addTestLog('Yopmail inbox is public — view at yopmail.com or use AI test email to see display','info');
+}
+
+/* ── CUSTOM ── */
+async function setCustom(){
+  let user=document.getElementById('cu-user').value.trim()||rnd(10);
+  let domain=document.getElementById('cu-dom').value;
+  let email=user+'@'+domain;
+  const gd=['guerrillamail.com','sharklasers.com','guerrillamailblock.com','grr.la','spam4.me'];
+  if(gd.includes(domain)){
+    try{
+      let r=await fetch(`https://api.guerrillamail.com/ajax.php?f=set_email_user&email_user=${encodeURIComponent(user)}&lang=en`);
+      let d=await r.json();sidToken=d.sid_token||sidToken;seqNum=0;email=d.email_addr;
+    }catch(e){}
+  }
+  activateEmail(email,'CUSTOM',domain,'VARIES');
+  startTimer(600);startRefreshCycle();
+}
+
+/* ── MULTI ── */
+let multiAddrs=[];
+async function genMulti(){
+  document.getElementById('multi-grid').innerHTML='<div style="color:var(--dim3);font-size:10px;grid-column:1/-1;padding:8px;letter-spacing:2px;animation:pulse 1s infinite">GENERATING 4 ADDRESSES...</div>';
+  setSbar('GENERATING MULTI-BOX...','spin');
+  const slots=['@guerrillamail.com','@sharklasers.com','@grr.la','@spam4.me'];
+  multiAddrs=slots.map(d=>rnd(10)+d);
+  try{let r=await fetch('https://api.guerrillamail.com/ajax.php?f=get_email_address&lang=en');let d=await r.json();multiAddrs[0]=d.email_addr;sidToken=d.sid_token||'';}catch(e){}
+  try{let r=await fetch('https://api.internal.temp-mail.io/api/v3/email/new',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({min_name_length:8,max_name_length:10})});let d=await r.json();if(d.email)multiAddrs[1]=d.email;}catch(e){}
+  let g=document.getElementById('multi-grid');g.innerHTML='';
+  const mprov=['GUERRILLA','TEMP-MAIL.IO','SHARKLASERS','SPAM4.ME'];
+  multiAddrs.forEach((addr,i)=>{
+    let el=document.createElement('div');el.className='mini'+(i===0?' active':'');
+    el.innerHTML=`<div class="mini-prov">${mprov[i]}</div><div class="mini-addr">${addr}</div><div class="mini-st ${i<2?'live':'gen'}">${i<2?'● LIVE API':'● GENERATED'}</div>`;
+    el.onclick=()=>{
+      document.querySelectorAll('.mini').forEach(x=>x.classList.remove('active'));el.classList.add('active');
+      activateEmail(addr,'MULTI-BOX',addr.split('@')[1],'MIXED');
+      startRefreshCycle();
+    };
+    g.appendChild(el);
+  });
+  if(multiAddrs[0]){activateEmail(multiAddrs[0],'MULTI-BOX',multiAddrs[0].split('@')[1],'MIXED');}
+  startTimer(600);startRefreshCycle();
+  setSbar('4 ADDRESSES ACTIVE — CLICK TO SELECT','ok');setConnected(true);
+}
+
+/* ── ACTIVATE EMAIL ── */
+function activateEmail(email,prov,dom,life){
+  currentEmail=email;
+  document.getElementById('addr-text').textContent=email;
+  document.getElementById('addr-text').className='addr-main';
+  document.getElementById('ad-prov').textContent=prov;
+  document.getElementById('ad-dom').textContent=dom;
+  document.getElementById('ad-life').textContent=life;
+  document.getElementById('ad-stat').textContent='ACTIVE';
+  document.getElementById('footer-addr').textContent=email;
+  setConnected(true);setSbar('READY — '+email,'ok');
+  clearInbox();
+}
+
+/* ── GUERRILLA MAIL ── */
+/* KEY FIX: store sid_token and pass it in every check_email call */
+async function genGuerrilla(){
+  setSbar('CONNECTING TO GUERRILLA MAIL...','spin');
+  let r=await fetch('https://api.guerrillamail.com/ajax.php?f=get_email_address&lang=en');
+  let d=await r.json();
+  sidToken=d.sid_token||'';seqNum=0;
+  activateEmail(d.email_addr,'GUERRILLA MAIL',d.email_addr.split('@')[1],'60 MIN');
+  startTimer(3600);
+}
+async function fetchGuerrilla(){
+  if(!currentEmail)return[];
+  let alias=currentEmail.split('@')[0];
+  /* Must pass sid_token — without it Guerrilla gives empty results */
+  let url=`https://api.guerrillamail.com/ajax.php?f=check_email&seq=${seqNum}&alias=${encodeURIComponent(alias)}`;
+  if(sidToken)url+=`&sid_token=${encodeURIComponent(sidToken)}`;
+  let r=await fetch(url);
+  let d=await r.json();
+  /* Refresh sid_token if returned */
+  if(d.sid_token)sidToken=d.sid_token;
+  if(d.list&&d.list.length){
+    seqNum=d.list[d.list.length-1].mail_id;
+    return d.list.map(m=>({
+      id:m.mail_id,from:m.mail_from,to:currentEmail,
+      subj:m.mail_subject,time:fmtTime(m.mail_timestamp*1000),
+      preview:m.mail_excerpt,provider:'guerrilla',size:m.mail_size||'—'
+    }));
+  }
+  return[];
+}
+async function fetchGuerrillaFull(id){
+  let url=`https://api.guerrillamail.com/ajax.php?f=fetch_email&email_id=${id}`;
+  if(sidToken)url+=`&sid_token=${encodeURIComponent(sidToken)}`;
+  let r=await fetch(url);let d=await r.json();
+  return{
+    body:stripHtml(d.mail_body||''),html:d.mail_body||'',
+    to:d.mail_recipient||currentEmail,from:d.mail_from||'',
+    subj:d.mail_subject||'',date:d.mail_date||fmtTime(Date.now())
+  };
+}
+
+/* ── TEMP-MAIL.IO ── */
+async function genTempMail(){
+  setSbar('REQUESTING TEMP-MAIL.IO ADDRESS...','spin');
+  let r=await fetch('https://api.internal.temp-mail.io/api/v3/email/new',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({min_name_length:8,max_name_length:12})});
+  let d=await r.json();
+  activateEmail(d.email,'TEMP-MAIL.IO',d.email.split('@')[1],'10 MIN');
+  startTimer(600);
+}
+async function fetchTempMail(){
+  let r=await fetch(`https://api.internal.temp-mail.io/api/v3/email/${currentEmail}/messages`);
+  let d=await r.json();
+  return(d.messages||[]).map(m=>({
+    id:m.id,from:m.from,to:currentEmail,
+    subj:m.subject,time:fmtTime(m.created_at*1000),
+    preview:(m.body_text||'').slice(0,200),
+    provider:'tempmail',body_text:m.body_text||'',body_html:m.body_html||''
+  }));
+}
+
+/* ── MAIL.GW ── */
+let mgwPass='';
+async function genMailGW(){
+  setSbar('CREATING MAIL.GW MAILBOX...','spin');
+  let dr=await fetch('https://api.mail.gw/domains');
+  let dd=await dr.json();
+  let domain=(dd['hydra:member']||[{domain:'mail.gw'}])[0].domain;
+  let user=rnd(10);mgwPass=rnd(16);
+  let email=user+'@'+domain;
+  await fetch('https://api.mail.gw/accounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:email,password:mgwPass})});
+  let tr=await fetch('https://api.mail.gw/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:email,password:mgwPass})});
+  let td=await tr.json();mailgwToken=td.token;
+  activateEmail(email,'MAIL.GW',domain,'10 MIN');startTimer(600);
+}
+async function fetchMailGW(){
+  if(!mailgwToken)return[];
+  let r=await fetch('https://api.mail.gw/messages',{headers:{Authorization:'Bearer '+mailgwToken}});
+  let d=await r.json();
+  return(d['hydra:member']||[]).map(m=>({
+    id:m.id,from:m.from?.address||'?',to:(m.to||[{address:currentEmail}])[0].address,
+    subj:m.subject,time:fmtTime(m.createdAt),preview:m.intro||'',provider:'mailgw'
+  }));
+}
+async function fetchMailGWFull(id){
+  let r=await fetch('https://api.mail.gw/messages/'+id,{headers:{Authorization:'Bearer '+mailgwToken}});
+  let d=await r.json();
+  return{body:d.text||stripHtml(d.html||''),html:d.html||'',
+    to:(d.to||[{address:currentEmail}])[0].address,from:d.from?.address||'',
+    subj:d.subject||'',date:d.createdAt||''};
+}
+
+/* ── MAILDROP ── */
+async function genMaildrop(){
+  setSbar('GENERATING MAILDROP ADDRESS...','spin');
+  let user=rnd(10);
+  activateEmail(user+'@maildrop.cc','MAILDROP','maildrop.cc','PERMANENT');startTimer(600);
+}
+async function fetchMaildrop(){
+  try{
+    let user=currentEmail.split('@')[0];
+    let r=await fetch(`https://api.maildrop.cc/v2/mailbox/${user}`);
+    let d=await r.json();
+    let msgs=Array.isArray(d)?d:(d.messages||[]);
+    return msgs.map(m=>({
+      id:m.id||m.headerId,from:m.from||m.sender||'?',to:currentEmail,
+      subj:m.subject||'(no subject)',time:fmtTime(m.date||m.receivedAt),
+      preview:(m.body||m.intro||'').slice(0,200),provider:'maildrop'
+    }));
+  }catch(e){return[];}
+}
+
+/* ── MAIN GENERATE ── */
+async function generateEmail(){
+  clearInbox();mailgwToken='';sidToken='';seqNum=0;
+  document.getElementById('addr-text').textContent='CONNECTING...';
+  document.getElementById('addr-text').className='addr-main loading';
+  try{
+    if(provider==='guerrilla')await genGuerrilla();
+    else if(provider==='tempmail')await genTempMail();
+    else if(provider==='mailgw')await genMailGW();
+    else if(provider==='maildrop')await genMaildrop();
+    else await genGuerrilla();
+    startRefreshCycle();
+  }catch(err){
+    document.getElementById('addr-text').textContent='ERROR — TRY ANOTHER PROVIDER';
+    setSbar('CONNECTION FAILED: '+err.message,'err');setConnected(false);
+  }
+}
+
+/* ── FETCH INBOX ── */
+async function fetchInbox(manual=false){
+  if(!currentEmail)return;
+  let ring=document.getElementById('rring');ring.classList.add('spin');
+  try{
+    let msgs=[];
+    const liveProviders=['guerrilla','tempmail','mailgw','maildrop','multi','outlook-style','gmail-style'];
+    if(liveProviders.includes(provider)||provider==='custom'){
+      if(provider==='tempmail')msgs=await fetchTempMail();
+      else if(provider==='mailgw')msgs=await fetchMailGW();
+      else if(provider==='maildrop')msgs=await fetchMaildrop();
+      else msgs=await fetchGuerrilla(); // covers guerrilla, custom, outlook, gmail, multi
+    }
+    ring.classList.remove('spin');
+    // merge with test emails
+    let allMsgs=[...testMsgStore,...msgs];
+    let newReal=msgs.filter(m=>!msgStore.find(x=>String(x.id)===String(m.id)));
+    if(newReal.length>0&&msgStore.length>0){toast('📬 '+newReal.length+' NEW MESSAGE'+(newReal.length>1?'S':'')+'!');playBeep();}
+    msgStore=msgs;
+    if(allMsgs.length>0){renderMsgs(allMsgs);setSbar(msgs.length+' REAL MSG + '+testMsgStore.length+' TEST MSG','ok');}
+    else if(manual){setSbar('INBOX CLEAR — NO MESSAGES RECEIVED YET','ok');}
+  }catch(e){
+    ring.classList.remove('spin');
+    if(manual){setSbar('FETCH ERROR: '+e.message,'err');addTestLog('Fetch error: '+e.message,'err');}
+  }
+}
+
+/* ── ⚡ INJECT TEST EMAIL VIA CLAUDE API ── */
+async function injectTestEmail(type){
+  if(!currentEmail){toast('Generate an address first!');return;}
+  document.getElementById('test-sending').style.display='block';
+  addTestLog('Requesting AI-generated test email (type: '+type+')...','info');
+
+  const prompts={
+    system:`Generate a realistic system notification email. Respond ONLY with valid JSON, no markdown. Format:
+{"from":"noreply@system-alerts.io","fromName":"System Alerts","subject":"[MONGLE_OS] Inbox Verification Successful","body":"Full plain text email body here with realistic content, 3-5 paragraphs","html":"<div style='font-family:monospace;background:#000;color:#00ff41;padding:20px'><h2>✓ INBOX VERIFIED</h2><p>Your MONGLE_OS temp mail inbox is confirmed working.</p><p>Address: ${currentEmail}</p><p>Provider confirmed delivering mail at ${new Date().toLocaleTimeString()}.</p></div>"}`,
+    newsletter:`Generate a realistic tech newsletter email. Respond ONLY with valid JSON, no markdown. Format:
+{"from":"newsletter@techdigest.io","fromName":"Tech Digest Weekly","subject":"This Week in Tech: AI, Security, and Open Source","body":"Full plain text newsletter with 3-4 articles summarized","html":"<div style='font-family:Arial;padding:20px;max-width:600px'><h1 style='color:#333'>Tech Digest Weekly</h1><h3>🤖 AI News</h3><p>Latest developments in AI research this week...</p><h3>🔐 Security</h3><p>New vulnerabilities discovered in popular libraries...</p><h3>📦 Open Source</h3><p>Major releases from the open source community...</p></div>"}`,
+    otp:`Generate a realistic OTP verification email. Respond ONLY with valid JSON, no markdown. Format:
+{"from":"security@verify-service.com","fromName":"Security Team","subject":"Your One-Time Password: 847291","body":"Your OTP is 847291. Valid for 10 minutes. Do not share with anyone.","html":"<div style='font-family:Arial;text-align:center;padding:40px;background:#f5f5f5'><div style='background:white;padding:30px;border-radius:8px;max-width:400px;margin:0 auto'><h2>Verification Code</h2><div style='font-size:36px;font-weight:bold;letter-spacing:8px;color:#4CAF50;padding:20px'>847291</div><p>Valid for <strong>10 minutes</strong></p><p style='color:#999;font-size:12px'>If you did not request this, ignore this email.</p></div></div>"}`,
+    order:`Generate a realistic order confirmation email. Respond ONLY with valid JSON, no markdown. Format:
+{"from":"orders@shopexample.com","fromName":"ShopExample Orders","subject":"Order #MOS-7743 Confirmed — Est. Delivery 3-5 Days","body":"Thank you for your order. Order #MOS-7743. Items: 1x Mechanical Keyboard $89.99. Shipping to: your address. Total: $97.98","html":"<div style='font-family:Arial;padding:20px;max-width:600px'><h2>Order Confirmed ✓</h2><p>Order #MOS-7743</p><table style='width:100%;border-collapse:collapse'><tr style='background:#f5f5f5'><th style='padding:10px;text-align:left'>Item</th><th>Qty</th><th>Price</th></tr><tr><td style='padding:10px'>Mechanical Keyboard (Cherry MX Blue)</td><td>1</td><td>$89.99</td></tr><tr><td style='padding:10px'>Shipping</td><td>—</td><td>$7.99</td></tr><tr style='font-weight:bold'><td style='padding:10px'>Total</td><td>—</td><td>$97.98</td></tr></table><p>Estimated delivery: 3-5 business days</p></div>"}`
+  };
+
+  try{
+    let res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompts[type]||prompts.system}]
+      })
+    });
+    let data=await res.json();
+    let raw=data.content?.map(c=>c.text||'').join('')||'';
+    let clean=raw.replace(/```json|```/g,'').trim();
+    let email=JSON.parse(clean);
+
+    // Build test message object
+    let testId='test-'+Date.now();
+    let testMsg={
+      id:testId,
+      from:`${email.fromName||'Test'} <${email.from||'test@example.com'}>`,
+      fromRaw:email.from||'test@example.com',
+      to:currentEmail,
+      subj:email.subject||'Test Email',
+      time:fmtTime(Date.now()),
+      preview:(email.body||'').slice(0,120),
+      provider:'test',
+      body_text:email.body||'',
+      body_html:email.html||'',
+      isTest:true
+    };
+    testMsgStore.unshift(testMsg);
+    let allMsgs=[...testMsgStore,...msgStore];
+    renderMsgs(allMsgs);
+    setSbar((msgStore.length)+' REAL + '+testMsgStore.length+' TEST MESSAGES','ok');
+    document.getElementById('test-sending').style.display='none';
+    addTestLog('✓ Test email injected: "'+email.subject+'"','ok');
+    playBeep();
+    toast('📬 TEST EMAIL DELIVERED — '+email.subject.slice(0,30));
+    document.getElementById('msg-count').textContent=allMsgs.length;
+  }catch(err){
+    document.getElementById('test-sending').style.display='none';
+    addTestLog('✗ Error: '+err.message,'err');
+    toast('Test email error — '+err.message,'err');
+  }
+}
+
+function addTestLog(msg,cls='info'){
+  let log=document.getElementById('test-log');
+  let line=document.createElement('div');line.className=cls;line.textContent='> '+msg;
+  log.appendChild(line);log.scrollTop=log.scrollHeight;
+}
+
+/* ── RENDER MESSAGES ── */
+function renderMsgs(list){
+  document.getElementById('msg-count').textContent=list.length;
+  let box=document.getElementById('inbox');box.innerHTML='';
+  list.forEach(m=>{
+    let init=(m.fromRaw||m.from||'?').replace(/.*<(.+)>.*/,'$1').charAt(0).toUpperCase();
+    let el=document.createElement('div');
+    el.className='msg-item unread'+(m.isTest?' test-msg':'');
+    el.innerHTML=`
+      <div class="msg-summary">
+        <div class="msg-avatar">${init}</div>
+        <div class="msg-info">
+          <div class="msg-from">${esc(m.from)}</div>
+          <div class="msg-subj">${esc(m.subj||'(no subject)')}</div>
+          <div class="msg-snip">${esc(m.preview||'—')}</div>
+          <div class="msg-tags">
+            ${m.isTest?'<span class="msg-tag test">⚡ AI TEST</span>':'<span class="msg-tag new">● REAL MAIL</span>'}
+          </div>
+        </div>
+        <div class="msg-ts">${m.time||''}</div>
+      </div>
+      <div class="msg-full">
+        <div class="email-viewer" id="ev-${m.id}">
+          <div style="padding:12px 14px;color:var(--dim3);font-size:10px;letter-spacing:2px;animation:pulse 1s infinite">LOADING FULL EMAIL...</div>
+        </div>
+      </div>`;
+    el.onclick=async(e)=>{
+      if(e.target.tagName==='BUTTON'||e.target.closest('button'))return;
+      let isOpen=el.classList.contains('open');
+      document.querySelectorAll('.msg-item.open').forEach(x=>x.classList.remove('open'));
+      if(!isOpen){el.classList.add('open');el.classList.remove('unread');await renderFullEmail(m,`ev-${m.id}`);}
+    };
+    box.appendChild(el);
+  });
+}
+
+/* ── FULL EMAIL VIEW ── */
+async function renderFullEmail(m,cid){
+  let container=document.getElementById(cid);
+  try{
+    let full=null;
+    if(m.isTest){
+      full={body:m.body_text,html:m.body_html,to:m.to,from:m.from,subj:m.subj,date:m.time};
+    } else if(m.provider==='guerrilla'){
+      full=await fetchGuerrillaFull(m.id);
+    } else if(m.provider==='mailgw'){
+      full=await fetchMailGWFull(m.id);
+    } else if(m.provider==='tempmail'){
+      full={body:m.body_text||m.preview,html:m.body_html||'',to:m.to,from:m.from,subj:m.subj,date:m.time};
+    } else {
+      full={body:m.preview||'(no content available — try refreshing)',html:'',to:m.to,from:m.from,subj:m.subj,date:m.time};
+    }
+
+    let hasHtml=!!(full.html&&full.html.trim().length>20);
+    let uid=m.id;
+
+    container.innerHTML=`
+      <div class="email-hdr-table">
+        <span class="ehk">TO</span>       <span class="ehv to-addr">${esc(full.to||m.to||currentEmail)}</span>
+        <span class="ehk">FROM</span>     <span class="ehv from-addr">${esc(full.from||m.from)}</span>
+        <span class="ehk">SUBJECT</span> <span class="ehv subject">${esc(full.subj||m.subj||'(no subject)')}</span>
+        <span class="ehk">DATE</span>     <span class="ehv">${esc(full.date||m.time||'—')}</span>
+        <span class="ehk">SIZE</span>     <span class="ehv">${m.size||'—'}</span>
+        <span class="ehk">SOURCE</span>   <span class="ehv">${m.isTest?'⚡ AI-GENERATED TEST EMAIL':esc((m.provider||'').toUpperCase())}</span>
+      </div>
+      <div class="email-acts">
+        <div class="view-toggle">
+          <button class="vt active" onclick="switchView('${uid}','text',this)">TEXT</button>
+          ${hasHtml?`<button class="vt" onclick="switchView('${uid}','html',this)">HTML</button>`:''}
+          <button class="vt" onclick="switchView('${uid}','raw',this)">RAW</button>
+        </div>
+        <button class="ghost sm" onclick="copyBody('body-text-${uid}')">⎘ COPY</button>
+        <button class="ghost sm" onclick="dlMsg('${uid}')">↓ DOWNLOAD</button>
+      </div>
+      <div class="email-body-wrap" id="body-wrap-${uid}">
+        <div class="email-body-text" id="body-text-${uid}" data-raw="${esc(full.html||full.body)}">${esc(full.body||'(empty message)')}</div>
+        ${hasHtml?`<iframe class="email-html-frame" id="body-html-${uid}" sandbox="allow-same-origin allow-popups"></iframe>`:''}
+      </div>`;
+
+    // Load iframe
+    if(hasHtml){
+      let frame=document.getElementById('body-html-'+uid);
+      if(frame)frame.srcdoc=full.html;
+    }
+  }catch(err){
+    container.innerHTML=`<div style="padding:14px;color:#ff4444;font-size:10px;letter-spacing:1px">⚠ ERROR LOADING EMAIL: ${esc(err.message)}</div>`;
+  }
+}
+
+function switchView(uid,mode,btn){
+  let parent=btn.closest('.email-viewer');
+  parent.querySelectorAll('.vt').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  let t=document.getElementById('body-text-'+uid);
+  let h=document.getElementById('body-html-'+uid);
+  if(t)t.style.display='none';
+  if(h)h.style.display='none';
+  if(mode==='html'&&h){h.style.display='block';}
+  else if(mode==='raw'&&t){t.style.display='block';t.textContent=t.dataset.raw||t.textContent;}
+  else if(t){t.style.display='block';}
+}
+function copyBody(id){
+  let el=document.getElementById(id);
+  if(el)navigator.clipboard.writeText(el.textContent||'').then(()=>toast('BODY COPIED'));
+}
+function dlMsg(uid){
+  let el=document.getElementById('body-text-'+uid);
+  if(!el)return;
+  let blob=new Blob([el.textContent],{type:'text/plain'});
+  let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='email_'+uid+'.txt';a.click();
+}
+
+/* ── TIMER ── */
+function startTimer(max=600){
+  timeLeft=max;timerMax=max;clearInterval(timerInt);timerInt=setInterval(()=>{
+    if(timeLeft<=0){clearInterval(timerInt);generateEmail();return;}
+    timeLeft--;
+    let m=String(Math.floor(timeLeft/60)).padStart(2,'0'),s=String(timeLeft%60).padStart(2,'0');
+    let el=document.getElementById('tnum'),f=document.getElementById('tfill');
+    el.textContent=m+':'+s;
+    let p=timeLeft/timerMax;
+    f.style.width=(p*100)+'%';
+    el.className='timer-num'+(p<.1?' crit':p<.25?' warn':'');
+    f.className='timer-fill'+(p<.1?' crit':p<.25?' warn':'');
+  },1000);
+}
+function extendTimer(s){timeLeft=Math.min(timeLeft+s,timerMax*4);toast('SESSION +'+Math.floor(s/60)+' MIN');}
+
+/* ── AUTO REFRESH ── */
+function startRefreshCycle(){
+  clearInterval(refInt);nextRefSec=15;
+  refInt=setInterval(()=>{
+    nextRefSec--;let d=nextRefSec+'s';
+    document.getElementById('next-ref').textContent=d;
+    document.getElementById('next-ref2').textContent=d;
+    if(nextRefSec<=0){fetchInbox(false);nextRefSec=15;}
+  },1000);
+}
+
+/* ── UTILS ── */
+function clearInbox(){
+  msgStore=[];testMsgStore=[];
+  document.getElementById('msg-count').textContent='0';
+  document.getElementById('inbox').innerHTML='<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-lbl">INBOX EMPTY</div><div class="empty-sub">Send mail to your address then hit REFRESH — or click ⚡ AI TEST EMAIL on the left to verify the display pipeline works.</div></div>';
+}
+function copyEmail(){
+  if(!currentEmail)return;
+  navigator.clipboard.writeText(currentEmail).then(()=>toast('✓ COPIED: '+currentEmail));
+}
+function shareEmail(){
+  if(!currentEmail)return;
+  if(navigator.share)navigator.share({title:'Temp Email',text:currentEmail}).catch(()=>copyEmail());
+  else copyEmail();
+}
+function setSbar(msg,type=''){
+  let el=document.getElementById('sbar');
+  let icon=type==='spin'?'<span class="spin">◌</span>':type==='ok'?'<span style="color:var(--g)">✓</span>':type==='err'?'<span style="color:#ff4444">✗</span>':'<span>›</span>';
+  el.innerHTML=icon+' '+msg;el.className='sbar '+(type==='ok'?'ok':type==='err'?'err':'');
+}
+function setConnected(ok){
+  document.getElementById('conn-dot').className='dot'+(ok?'':' red');
+  document.getElementById('conn-lbl').textContent=ok?'ONLINE':'ERROR';
+}
+function rnd(n){return Math.random().toString(36).slice(2,2+n)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function stripHtml(h){return(h||'').replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s{3,}/g,'\n').trim()}
+function fmtTime(ts){try{let d=new Date(typeof ts==='number'&&ts<1e12?ts*1000:ts);return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+' '+d.toLocaleDateString([],{month:'short',day:'numeric'});}catch(e){return String(ts||'')}}
+let _tt;function toast(msg,dur=3000){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),dur);}
+function playBeep(){try{let a=new AudioContext(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.setValueAtTime(.12,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.25);o.start();o.stop(a.currentTime+.25);}catch(e){}}
+
+/* ── INIT ── */
+setTimeout(()=>generateEmail(),1900);
+</script>
+</body>
+</html>
