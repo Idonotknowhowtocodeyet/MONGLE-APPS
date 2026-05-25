@@ -1,0 +1,172 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .os {
+    background: #0a0a0a;
+    color: #00ff41;
+    font-family: 'Share Tech Mono', monospace;
+    border-radius: 8px;
+    overflow: hidden;
+    min-height: 300px;
+  }
+  .bar {
+    background: #001200;
+    border-bottom: 1px solid #00ff41;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    letter-spacing: 3px;
+  }
+  .bar-right { font-size: 10px; color: #006600; letter-spacing: 1px; }
+  .main { padding: 16px; }
+  .card {
+    background: #001200;
+    border: 1px solid #003300;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s;
+  }
+  .card-header:hover { background: #001a00; }
+  .card-name { font-size: 13px; letter-spacing: 2px; }
+  .card-arrow { font-size: 11px; color: #006600; transition: transform 0.2s; }
+  .card.open .card-arrow { transform: rotate(90deg); }
+  .card-links { display: none; border-top: 1px solid #002200; }
+  .card.open .card-links { display: block; }
+  .link-item {
+    display: block;
+    padding: 9px 20px;
+    font-size: 11px;
+    color: #009926;
+    text-decoration: none;
+    border-bottom: 1px solid #001a00;
+    letter-spacing: 1px;
+    transition: background 0.1s, color 0.1s;
+  }
+  .link-item:last-child { border-bottom: none; }
+  .link-item:hover { background: #002200; color: #00ff41; }
+  .link-item::before { content: '→ '; color: #004400; }
+</style>
+
+<div class="os">
+  <h2 style="position:absolute;left:-9999px">MONGLE_OS Proxy Hub</h2>
+  <div class="bar">
+    MONGLE_OS // PROXY HUB
+    <span class="bar-right" id="clock"></span>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<script>
+// ============================================================
+//  ADD / EDIT PROXIES HERE
+//  Each entry = one card. Add as many links as you want.
+// ============================================================
+const PROXIES = [
+  {
+    name: "ULTRAVIOLET",
+    links: [
+      { label: "arcanium",        url: "https://uv.arcanium.app/" },
+      { label: "titanium UV",     url: "https://uv.titaniumnetwork.org/" },
+      { label: "holy UV",         url: "https://holyunblocker.net/" },
+    ]
+  },
+  {
+    name: "INTERSTELLAR",
+    links: [
+      { label: "arcanium",        url: "https://interstellar.arcanium.app/" },
+      { label: "official site",   url: "https://interstellarproxy.netlify.app/" },
+    ]
+  },
+  {
+    name: "RAMMERHEAD",
+    links: [
+      { label: "arcanium",        url: "https://rh.arcanium.app/" },
+      { label: "official",        url: "https://rammerhead.org/" },
+    ]
+  },
+  {
+    name: "DOGE UNBLOCKER",
+    links: [
+      { label: "arcane.fun",      url: "https://doge.arcane.fun/" },
+      { label: "doge v2",         url: "https://dogeunblocker.net/" },
+    ]
+  },
+  {
+    name: "UTOPIA",
+    links: [
+      { label: "arcanium",        url: "https://utopia.arcanium.app/" },
+      { label: "utopia games",    url: "https://utopia.arcanium.app/games" },
+      { label: "utopia apps",     url: "https://utopia.arcanium.app/apps" },
+      { label: "utopia proxy",    url: "https://utopia.arcanium.app/proxy" },
+    ]
+  },
+  {
+    name: "HOLY UNBLOCKER",
+    links: [
+      { label: "main site",       url: "https://holyunblocker.net/" },
+      { label: "games",           url: "https://holyunblocker.net/games" },
+      { label: "proxy",           url: "https://holyunblocker.net/proxy" },
+    ]
+  },
+  {
+    name: "NEBULA",
+    links: [
+      { label: "netlify",         url: "https://nebulaproxy.netlify.app/" },
+    ]
+  },
+  {
+    name: "TITANIUM NETWORK",
+    links: [
+      { label: "prox",            url: "https://prox.titaniumnetwork.org/" },
+      { label: "discord",         url: "https://discord.gg/titaniumnetwork" },
+    ]
+  },
+];
+// ============================================================
+//  END OF CONFIG — nothing below needs touching
+// ============================================================
+
+const main = document.getElementById('main');
+
+PROXIES.forEach((proxy, i) => {
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const header = document.createElement('div');
+  header.className = 'card-header';
+  header.innerHTML = `<span class="card-name">${proxy.name}</span><span class="card-arrow">▶</span>`;
+  header.onclick = () => card.classList.toggle('open');
+
+  const links = document.createElement('div');
+  links.className = 'card-links';
+  proxy.links.forEach(l => {
+    const a = document.createElement('a');
+    a.className = 'link-item';
+    a.href = l.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = l.label;
+    links.appendChild(a);
+  });
+
+  card.appendChild(header);
+  card.appendChild(links);
+  main.appendChild(card);
+});
+
+setInterval(() => {
+  document.getElementById('clock').textContent = new Date().toTimeString().split(' ')[0];
+}, 1000);
+</script>
