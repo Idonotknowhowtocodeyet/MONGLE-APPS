@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MONGLE_OS — Request Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --os-bg:#0a0c10;
+  --os-border:#1e3a2f;
+  --os-green:#00ff88;
+  --os-green-dim:#00cc6a;
+  --os-text:#c8ffd4;
+  --os-muted:#4a7a5a;
+  --os-red:#ff4466;
+}
+body{background:#0a0c10;font-family:'Share Tech Mono',monospace;color:#c8ffd4;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
+#app{width:100%;max-width:680px}
+.os-header{text-align:center;margin-bottom:2rem}
+.os-logo{font-family:'Orbitron',monospace;font-size:2.4rem;font-weight:900;color:var(--os-green);letter-spacing:0.35em;text-shadow:0 0 24px rgba(0,255,136,0.45)}
+.os-sub{font-size:11px;color:var(--os-muted);letter-spacing:0.2em;margin-top:6px}
+.scanline{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--os-green),transparent);margin:1rem 0;opacity:0.4}
+.terminal{background:var(--os-bg);border:1px solid var(--os-border);border-radius:4px;padding:1.75rem;position:relative}
+.terminal::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.012) 2px,rgba(0,255,136,0.012) 4px);pointer-events:none;border-radius:4px}
+.corner{position:absolute;width:14px;height:14px;border-color:var(--os-green);border-style:solid;opacity:0.4}
+.corner-tl{top:8px;left:8px;border-width:1px 0 0 1px}
+.corner-tr{top:8px;right:8px;border-width:1px 1px 0 0}
+.corner-bl{bottom:8px;left:8px;border-width:0 0 1px 1px}
+.corner-br{bottom:8px;right:8px;border-width:0 1px 1px 0}
+.tbar{display:flex;align-items:center;gap:8px;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid var(--os-border)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot-r{background:#ff4466}.dot-y{background:#ffcc00}.dot-g{background:#00ff88}
+.tbar-title{font-size:11px;color:var(--os-muted);letter-spacing:0.12em;margin-left:4px}
+.prompt{color:var(--os-green-dim);font-size:12px;margin-bottom:1.75rem}
+.prompt span{color:var(--os-green)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:520px){.grid-2{grid-template-columns:1fr}}
+.field{margin-bottom:1.25rem}
+.label{font-size:11px;color:var(--os-muted);letter-spacing:0.14em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.req{color:var(--os-green);font-size:10px}
+input,select,textarea{width:100%;background:#0d1a13;border:1px solid var(--os-border);color:#c8ffd4;font-family:'Share Tech Mono',monospace;font-size:13px;padding:10px 12px;border-radius:2px;outline:none;transition:border-color 0.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--os-green);box-shadow:0 0 8px rgba(0,255,136,0.12)}
+input::placeholder,textarea::placeholder{color:#4a7a5a}
+textarea{resize:vertical;min-height:90px}
+select{appearance:none;background:#0d1a13 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%2300ff88'/%3E%3C/svg%3E") no-repeat right 12px center;cursor:pointer}
+.checks{display:flex;flex-direction:column;gap:8px}
+.check-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--os-border);border-radius:2px;background:#0d1a13;cursor:pointer;transition:border-color 0.2s}
+.check-row:hover{border-color:var(--os-green-dim)}
+.check-row.on{border-color:var(--os-green);background:rgba(0,255,136,0.04)}
+.check-row input[type=checkbox]{accent-color:var(--os-green);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.check-row label{font-size:12px;letter-spacing:0.05em;cursor:pointer}
+.divider{border:none;border-top:1px solid var(--os-border);margin:1.5rem 0}
+.btn{width:100%;margin-top:1.5rem;padding:14px;background:transparent;border:1px solid var(--os-green);color:var(--os-green);font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:0.2em;cursor:pointer;border-radius:2px;transition:all 0.2s}
+.btn:hover{background:rgba(0,255,136,0.08);box-shadow:0 0 18px rgba(0,255,136,0.18)}
+.btn:active{transform:scale(0.99)}
+.btn:disabled{opacity:0.35;cursor:not-allowed}
+.status{margin-top:1rem;font-size:11px;color:var(--os-muted);text-align:center;min-height:18px;letter-spacing:0.1em}
+.status.ok{color:var(--os-green)}.status.err{color:var(--os-red)}
+.success{display:none;text-align:center;padding:2rem 1rem}
+.success.show{display:block}
+.suc-icon{font-size:3.5rem;color:var(--os-green);margin-bottom:1rem}
+.suc-title{font-family:'Orbitron',monospace;font-size:1.2rem;color:var(--os-green);letter-spacing:0.22em;margin-bottom:0.5rem}
+.suc-msg{font-size:11px;color:var(--os-muted);word-break:break-all;margin-top:0.5rem}
+.tag{display:inline-block;font-size:10px;padding:3px 10px;border-radius:2px;background:rgba(0,255,136,0.1);color:var(--os-green);border:1px solid #003d1f;letter-spacing:0.1em;margin-top:1.25rem}
+.footer{text-align:center;font-size:10px;color:var(--os-muted);letter-spacing:0.14em;margin-top:1rem}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="os-header">
+    <div class="os-logo">MONGLE_OS</div>
+    <div class="os-sub">GAMING PORTAL // REQUEST TERMINAL v1.0</div>
+  </div>
+  <div class="scanline"></div>
+
+  <div class="terminal">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="tbar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <span class="tbar-title">// SUBMIT REQUEST — mongle-requests.firebaseio.com</span>
+    </div>
+
+    <div class="prompt">root@mongle_os:~$ <span>init request_form --db=realtime</span></div>
+
+    <div id="formBody">
+      <div class="grid-2">
+        <div class="field">
+          <div class="label">[ PLAYER_NAME ] <span class="req">*</span></div>
+          <input id="playerName" type="text" placeholder="your handle..." />
+        </div>
+        <div class="field">
+          <div class="label">[ CONTACT_EMAIL ] <span class="req">*</span></div>
+          <input id="contactEmail" type="email" placeholder="you@domain.com" />
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label">[ REQUEST_TYPE ] <span class="req">*</span></div>
+        <select id="requestType">
+          <option value="">-- select category --</option>
+          <option>Bug Report</option>
+          <option>Feature Request</option>
+          <option>Game Suggestion</option>
+          <option>Account Issue</option>
+          <option>Tournament Inquiry</option>
+          <option>Partnership</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="label">[ SUBJECT ] <span class="req">*</span></div>
+        <input id="subject" type="text" placeholder="brief title of your request..." />
+      </div>
+
+      <div class="field">
+        <div class="label">[ DETAILS ] <span class="req">*</span></div>
+        <textarea id="details" placeholder="describe your request in full...&#10;&#10;include relevant context, links, or steps to reproduce."></textarea>
+      </div>
+
+      <hr class="divider"/>
+
+      <div class="field">
+        <div class="label">[ PLATFORMS ] <span style="color:#4a7a5a;font-size:10px">(select all that apply)</span></div>
+        <div class="checks" id="platformGroup">
+          <div class="check-row" onclick="toggleCheck(this)"><input type="checkbox" value="PC"/><label>PC / Desktop</label></div>
+          <div class="check-row" onclick="toggleCheck(this)"><input type="checkbox" value="Mobile"/><label>Mobile</label></div>
+          <div class="check-row" onclick="toggleCheck(this)"><input type="checkbox" value="Console"/><label>Console</label></div>
+          <div class="check-row" onclick="toggleCheck(this)"><input type="checkbox" value="Browser"/><label>Browser</label></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="label">[ PRIORITY_LEVEL ]</div>
+        <select id="priority">
+          <option value="Low">Low — general inquiry</option>
+          <option value="Medium" selected>Medium — standard request</option>
+          <option value="High">High — urgent issue</option>
+          <option value="Critical">Critical — game-breaking bug</option>
+        </select>
+      </div>
+
+      <button class="btn" id="submitBtn" onclick="submitRequest()">▶ TRANSMIT REQUEST</button>
+      <div class="status" id="statusBar">awaiting input...</div>
+    </div>
+
+    <div class="success" id="successScreen">
+      <div class="suc-icon">✓</div>
+      <div class="suc-title">REQUEST LOGGED</div>
+      <div class="suc-msg" id="successMsg"></div>
+      <div><span class="tag">MONGLE_OS CONFIRMED</span></div>
+      <button class="btn" style="max-width:300px;margin:1.5rem auto 0;display:block" onclick="resetForm()">+ NEW REQUEST</button>
+    </div>
+  </div>
+
+  <div class="scanline" style="margin-top:1rem"></div>
+  <div class="footer">MONGLE_OS GAMING PORTAL // ALL REQUESTS STORED SECURELY IN FIREBASE</div>
+</div>
+
+<script>
+// Realtime Database URL
+const DB_URL = "https://mongle-requests-default-rtdb.firebaseio.com";
+
+function toggleCheck(row){
+  const cb = row.querySelector('input[type=checkbox]');
+  cb.checked = !cb.checked;
+  row.classList.toggle('on', cb.checked);
+}
+
+function setStatus(msg, type=''){
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.className = 'status ' + type;
+}
+
+// Generate a simple unique ID (like Firebase push keys)
+function makeId(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+
+async function submitRequest(){
+  const name    = document.getElementById('playerName').value.trim();
+  const email   = document.getElementById('contactEmail').value.trim();
+  const type    = document.getElementById('requestType').value;
+  const subject = document.getElementById('subject').value.trim();
+  const details = document.getElementById('details').value.trim();
+  const priority= document.getElementById('priority').value;
+
+  if(!name)                        { setStatus('ERROR: player_name is required','err'); return; }
+  if(!email||!email.includes('@')) { setStatus('ERROR: valid contact_email required','err'); return; }
+  if(!type)                        { setStatus('ERROR: request_type not selected','err'); return; }
+  if(!subject)                     { setStatus('ERROR: subject field is empty','err'); return; }
+  if(!details)                     { setStatus('ERROR: details field is empty','err'); return; }
+
+  const platforms = Array.from(
+    document.querySelectorAll('#platformGroup input:checked')
+  ).map(c => c.value);
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  setStatus('>> transmitting to MONGLE_OS servers...');
+
+  // Folder key = player name, sanitized
+  const folderKey = name.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_-]/g,'').toLowerCase();
+  const docId = makeId();
+
+  const payload = {
+    playerName:   name,
+    contactEmail: email,
+    requestType:  type,
+    subject:      subject,
+    details:      details,
+    platforms:    platforms,
+    priority:     priority,
+    submittedAt:  new Date().toISOString(),
+    status:       'open'
+  };
+
+  // PUT to requests/{folderKey}/{docId}.json
+  const url = `${DB_URL}/requests/${folderKey}/${docId}.json`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok){
+      const txt = await res.text();
+      if(res.status === 401 || res.status === 403){
+        setStatus('PERMISSION DENIED: set Realtime DB rules to ".read":true, ".write":true','err');
+      } else {
+        setStatus('ERROR ' + res.status + ': ' + txt.slice(0,80), 'err');
+      }
+      btn.disabled = false;
+      return;
+    }
+
+    document.getElementById('formBody').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+    document.getElementById('successMsg').textContent =
+      `Stored at: requests/${folderKey}/${docId}`;
+
+  } catch(err){
+    setStatus('NETWORK ERROR: ' + err.message, 'err');
+    btn.disabled = false;
+  }
+}
+
+function resetForm(){
+  document.getElementById('formBody').style.display = 'block';
+  document.getElementById('successScreen').classList.remove('show');
+  ['playerName','contactEmail','subject','details'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('requestType').value='';
+  document.getElementById('priority').value='Medium';
+  document.querySelectorAll('#platformGroup input').forEach(c=>{
+    c.checked=false;
+    c.closest('.check-row').classList.remove('on');
+  });
+  document.getElementById('submitBtn').disabled = false;
+  setStatus('awaiting input...');
+}
+</script>
+</body>
+</html>
