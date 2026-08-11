@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindReader — Admin</title>
+<style>
+  :root{--bg:#0b0b0b;--panel:#161616;--line:#2a2a2a;--accent:#3ea6ff;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:#eee;font-family:"Segoe UI",Roboto,Arial,sans-serif;
+    padding:24px;max-width:680px;margin:0 auto;}
+  h1{font-size:22px;margin-bottom:4px;}
+  .sub{color:#888;font-size:13px;margin-bottom:20px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;margin-bottom:18px;}
+  label{display:block;font-size:13px;color:#aaa;margin-bottom:6px;}
+  input[type=text],textarea,select{width:100%;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;
+    color:#eee;padding:10px 12px;font-size:14px;margin-bottom:14px;}
+  textarea{resize:vertical;min-height:60px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  button{cursor:pointer;font-family:inherit;border:none;border-radius:8px;padding:10px 18px;
+    font-size:14px;font-weight:600;}
+  .primary{background:var(--accent);color:#000;}
+  .ghost{background:#222;color:#eee;}
+  .yes{background:#2e7d32;color:#fff;}
+  .no{background:#b71c1c;color:#fff;}
+  .status-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#555;margin-right:6px;}
+  .status-dot.on{background:#4caf50;}
+  #link-box{display:flex;gap:8px;align-items:center;}
+  #share-link{font-size:13px;color:#9ecbff;word-break:break-all;flex:1;}
+  small.hint{color:#666;display:block;margin-top:6px;}
+  #player-question-preview{font-size:13px;color:#ccc;background:#0d0d0d;border:1px solid #222;
+    border-radius:8px;padding:10px;margin-bottom:14px;min-height:20px;}
+  #player-answer-preview{font-size:14px;font-weight:600;color:#fff;}
+
+  /* ---- Tabs ---- */
+  #tab-nav{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab-btn{background:#161616;color:#999;border:1px solid var(--line);border-radius:8px;
+    padding:9px 16px;font-size:13px;font-weight:600;}
+  .tab-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .stat-tile{background:#0d0d0d;border:1px solid #262626;border-radius:10px;padding:14px 12px;
+    text-align:center;}
+  .stat-tile .stat-icon{font-size:22px;margin-bottom:6px;}
+  .stat-tile .stat-num{font-size:26px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;}
+  .stat-tile .stat-label{font-size:11px;color:#888;margin-top:4px;line-height:1.3;}
+</style>
+</head>
+<body>
+<h1>MindReader — Admin</h1>
+<div class="sub">You control what your friend sees. They never know it's you typing.</div>
+
+<div id="tab-nav">
+  <button class="tab-btn active" data-tab="connect">Connect</button>
+  <button class="tab-btn" data-tab="ask">Ask</button>
+  <button class="tab-btn" data-tab="games">Games</button>
+  <button class="tab-btn" data-tab="fx">FX</button>
+  <button class="tab-btn" data-tab="sequence">Sequence</button>
+  <button class="tab-btn" data-tab="escape">Escape Room</button>
+  <button class="tab-btn" data-tab="leaderboard">Leaderboard</button>
+  <button class="tab-btn" data-tab="stats">Stats</button>
+  <button class="tab-btn" data-tab="test">Test</button>
+  <button class="tab-btn" data-tab="history">History</button>
+</div>
+
+<div class="row" style="margin-bottom:18px;">
+  <button class="no" id="panic-btn">🚨 Panic — end now</button>
+  <button class="ghost" id="recap-btn">🏁 End with recap</button>
+</div>
+
+<!-- ============ FX TAB ============ -->
+<div class="tab-panel" id="tab-fx">
+<div class="card">
+  <label>Fake notifications (fires instantly, any screen, any time)</label>
+  <div class="row" style="margin-bottom:12px;">
+    <button class="ghost notif-preset" data-icon="🔴" data-title="Screen Recording" data-msg="Your screen is now being recorded">🔴 Screen recording</button>
+    <button class="ghost notif-preset" data-icon="🔋" data-title="Battery Low" data-msg="10% battery remaining">🔋 Battery low</button>
+    <button class="ghost notif-preset" data-icon="💬" data-title="Mom" data-msg="Are you home yet?">💬 Message from Mom</button>
+    <button class="ghost notif-preset" data-icon="📸" data-title="Photos" data-msg="1 new photo added to shared album">📸 New photo</button>
+    <button class="ghost notif-preset" data-icon="⚠️" data-title="System" data-msg="Unusual activity detected on this device">⚠️ System warning</button>
+  </div>
+  <div class="row">
+    <input type="text" id="notif-title" placeholder="Custom title" style="flex:1;">
+    <input type="text" id="notif-msg" placeholder="Custom message" style="flex:2;">
+    <button class="primary" id="notif-send" style="flex-shrink:0;">Send</button>
+  </div>
+  <div class="row" style="margin-top:12px;">
+    <button class="no" id="buzz-send">📳 Buzz their phone</button>
+    <small class="hint" style="margin:0;align-self:center;">Instant vibration + screen flash — works best on mobile.</small>
+  </div>
+</div>
+
+<div class="card">
+  <label>Countdown bomb — cut the wire (full-screen overlay, any time)</label>
+  <div class="row" style="margin-bottom:12px;">
+    <div style="flex:1;">
+      <label style="font-size:12px;">Seconds</label>
+      <input type="text" id="bomb-seconds" value="20">
+    </div>
+    <div style="flex:1;">
+      <label style="font-size:12px;">Number of wires (2-8)</label>
+      <input type="text" id="bomb-wire-count" value="4">
+    </div>
+  </div>
+  <label style="font-size:12px;">Message</label>
+  <input type="text" id="bomb-message-input" placeholder="Cut the correct wire before time runs out">
+  <div style="margin-bottom:14px;">
+    <label style="font-size:12px;">Correct wire</label>
+    <select id="bomb-correct-wire">
+      <option value="random" selected>Random (you won't know either)</option>
+      <option value="0">Wire 1</option>
+      <option value="1">Wire 2</option>
+      <option value="2">Wire 3</option>
+      <option value="3">Wire 4</option>
+      <option value="4">Wire 5</option>
+      <option value="5">Wire 6</option>
+      <option value="6">Wire 7</option>
+      <option value="7">Wire 8</option>
+    </select>
+    <small class="hint">If you pick a fixed wire number higher than your wire count, it'll fall back to random.</small>
+  </div>
+  <button class="no" id="bomb-send">💣 Send bomb</button>
+  <span id="bomb-outcome-status" style="font-size:13px;color:#888;margin-left:12px;"></span>
+</div>
+
+<div class="card">
+  <label>🎭 Dare card (full-screen challenge, any time)</label>
+  <div class="row" style="margin-bottom:12px;">
+    <button class="ghost dare-preset" data-text="Do your best impression of a chicken for 10 seconds">🐔 Chicken impression</button>
+    <button class="ghost dare-preset" data-text="Sing the next thing you say instead of talking">🎤 Sing everything</button>
+    <button class="ghost dare-preset" data-text="Talk in an accent until told to stop">🗣️ Accent time</button>
+    <button class="ghost dare-preset" data-text="Do 10 pushups right now">💪 10 pushups</button>
+  </div>
+  <div class="row" style="margin-bottom:14px;">
+    <input type="text" id="dare-text-input" placeholder="Custom dare..." style="flex:2;">
+    <input type="text" id="dare-seconds-input" placeholder="Time limit (s, optional)" style="flex:1;">
+    <button class="primary" id="dare-send" style="flex-shrink:0;">Send dare</button>
+  </div>
+  <span id="dare-outcome-status" style="font-size:13px;color:#888;"></span>
+</div>
+
+<div class="card">
+  <label>💬 Truth card (they must answer honestly, sent full-screen)</label>
+  <div class="row" style="margin-bottom:12px;">
+    <button class="ghost truth-preset" data-text="What's your biggest fear?">😨 Biggest fear</button>
+    <button class="ghost truth-preset" data-text="Who was your first crush?">💘 First crush</button>
+    <button class="ghost truth-preset" data-text="What's the most embarrassing thing you've done?">🙈 Embarrassing moment</button>
+  </div>
+  <div class="row" style="margin-bottom:14px;">
+    <input type="text" id="truth-text-input" placeholder="Custom truth question..." style="flex:1;">
+    <button class="primary" id="truth-send" style="flex-shrink:0;">Send truth</button>
+  </div>
+  <div id="truth-answer-display" style="font-size:13px;color:#ccc;background:#0d0d0d;
+    border:1px solid #222;border-radius:8px;padding:10px;display:none;"></div>
+</div>
+
+<div class="card">
+  <label>📞 Fake incoming call</label>
+  <div class="row">
+    <input type="text" id="call-name-input" placeholder="Caller name (e.g. Mom, Unknown Number)" style="flex:1;">
+    <button class="primary" id="call-send" style="flex-shrink:0;">Ring their phone</button>
+  </div>
+  <span id="call-outcome-status" style="font-size:13px;color:#888;"></span>
+</div>
+
+<div class="card">
+  <label>💻 Screen glitch / fake crash</label>
+  <div class="row" style="margin-bottom:12px;">
+    <textarea id="glitch-text-input" placeholder="SYSTEM ERROR&#10;Recovering data..." style="flex:2;min-height:50px;"></textarea>
+    <input type="text" id="glitch-seconds-input" placeholder="Seconds (default 4)" style="flex:1;">
+  </div>
+  <button class="no" id="glitch-send">💻 Trigger glitch</button>
+</div>
+
+<div class="card">
+  <label>🎡 Spin the wheel</label>
+  <small class="hint" style="margin-bottom:10px;">Type options separated by commas — dares, truths,
+  punishments, whatever. Spin picks one at random (or you can rig it) and sends it to their screen
+  as a dramatic reveal.</small>
+  <textarea id="wheel-options-input" placeholder="Do 20 jumping jacks, Speak in a British accent for 5 minutes, Text your crush, Sing happy birthday to yourself" style="min-height:60px;margin-bottom:12px;"></textarea>
+  <div id="wheel-spin-display" style="font-size:22px;font-weight:700;color:#f9a825;
+    min-height:32px;margin-bottom:12px;">Ready to spin</div>
+  <div class="row">
+    <button class="primary" id="wheel-spin-btn">🎡 Spin!</button>
+    <select id="wheel-rig-select" style="flex:1;">
+      <option value="random" selected>Random result</option>
+    </select>
+  </div>
+</div>
+
+<div class="card">
+  <label>🎙️ Voice message (record a short clip, sent straight to their screen)</label>
+  <small class="hint" style="margin-bottom:12px;">Uses your mic (needs permission once). Keep clips
+  under ~15 seconds — this rides on the free Firebase database, no paid storage needed.</small>
+  <div class="row" style="align-items:center;">
+    <button class="no" id="voice-record-btn">🔴 Start recording</button>
+    <span id="voice-record-status" style="font-size:13px;color:#888;">Not recording</span>
+  </div>
+  <div id="voice-preview-row" style="display:none;margin-top:12px;">
+    <audio id="voice-preview-audio" controls style="width:100%;margin-bottom:10px;"></audio>
+    <button class="primary" id="voice-send-btn">📤 Send to their screen</button>
+    <button class="ghost" id="voice-discard-btn">Discard</button>
+  </div>
+</div>
+</div>
+
+<!-- ============ SEQUENCE TAB ============ -->
+<div class="tab-panel" id="tab-sequence">
+<div class="card">
+  <label>🎬 Sequence builder — chain effects into a scripted mini-experience</label>
+  <small class="hint" style="margin-bottom:14px;">Build a list of steps below. Hit Play and they'll fire
+  automatically in order, waiting the delay you set before each one — so you can walk away and let it run,
+  or narrate along in person while it plays out.</small>
+
+  <div class="row" style="margin-bottom:12px;">
+    <select id="seq-step-type" style="flex:1;">
+      <option value="notif">Fake notification</option>
+      <option value="dare">Dare</option>
+      <option value="truth">Truth</option>
+      <option value="bomb">Countdown bomb</option>
+      <option value="call">Fake call</option>
+      <option value="glitch">Screen glitch</option>
+      <option value="question">Ask yes/no question</option>
+    </select>
+    <input type="text" id="seq-step-text" placeholder="Text / title / message for this step" style="flex:2;">
+    <input type="text" id="seq-step-delay" placeholder="Delay before this step (s)" value="3" style="flex:1;">
+  </div>
+  <button class="ghost" id="seq-add-step">+ Add step to sequence</button>
+
+  <div id="seq-list" style="margin-top:16px;"></div>
+
+  <div class="row" style="margin-top:16px;">
+    <button class="primary" id="seq-play">▶ Play sequence</button>
+    <button class="ghost" id="seq-stop">■ Stop</button>
+    <button class="ghost" id="seq-clear">Clear all</button>
+  </div>
+  <div id="seq-status" style="font-size:13px;color:#888;margin-top:10px;"></div>
+</div>
+</div>
+
+<!-- ============ ESCAPE ROOM TAB ============ -->
+<div class="tab-panel" id="tab-escape">
+<div class="card">
+  <label>🔐 Escape Room — chain mini-games into a timed puzzle they must beat</label>
+  <small class="hint" style="margin-bottom:14px;">Build a stage order below, set a total time limit,
+  then start. Their screen shows a persistent countdown + stage progress. Watch their live progress
+  for each stage on the Games tab, then come back here to advance them or trap them. Miss the clock
+  and they're automatically trapped.</small>
+
+  <div class="row" style="margin-bottom:12px;">
+    <select id="escape-stage-type" style="flex:1;">
+      <option value="tictactoe">Tic-Tac-Toe</option>
+      <option value="whackamole">Whack-a-Mole</option>
+      <option value="rps">Rock Paper Scissors</option>
+      <option value="bomb">Cut the wire</option>
+    </select>
+    <input type="text" id="escape-stage-label" placeholder="Label shown to them (e.g. 'The First Lock')" style="flex:2;">
+  </div>
+  <button class="ghost" id="escape-add-stage">+ Add stage</button>
+  <div id="escape-stage-list" style="margin-top:14px;margin-bottom:16px;"></div>
+
+  <label style="font-size:12px;">Total time limit (minutes)</label>
+  <input type="text" id="escape-time-limit" value="10" style="max-width:120px;">
+  <button class="primary" id="escape-start-btn">🔐 Start Escape Room</button>
+
+  <div id="escape-live-status" style="margin-top:20px;padding-top:16px;border-top:1px solid #262626;display:none;">
+    <div id="escape-status-text" style="font-size:15px;color:#fff;margin-bottom:6px;">—</div>
+    <div id="escape-status-timer" style="font-size:20px;font-weight:800;color:#ff8a65;margin-bottom:14px;">--:--</div>
+    <div class="row">
+      <button class="yes" id="escape-advance-btn">✅ Stage cleared → Next</button>
+      <button class="no" id="escape-trap-btn">🔒 Trap them now</button>
+    </div>
+  </div>
+
+  <div id="escape-save-row" style="margin-top:16px;display:none;padding-top:16px;border-top:1px solid #262626;">
+    <label style="font-size:12px;">🏆 They escaped! Save this run to the leaderboard?</label>
+    <div class="row">
+      <input type="text" id="escape-save-name" placeholder="Team / player name" style="flex:2;">
+      <button class="primary" id="escape-save-btn" style="flex-shrink:0;">Save score</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ============ LEADERBOARD TAB ============ -->
+<div class="tab-panel" id="tab-leaderboard">
+<div class="card">
+  <label>🏆 Escape Room Leaderboard <span style="color:#666;font-weight:400;">(shared — visible to anyone using this app)</span></label>
+  <button class="ghost" id="leaderboard-refresh" style="margin-bottom:14px;">🔄 Refresh</button>
+  <div id="leaderboard-list" style="font-size:14px;color:#ccc;"></div>
+</div>
+</div>
+
+<!-- ============ STATS TAB ============ -->
+<div class="tab-panel" id="tab-stats">
+<div class="card">
+  <label>📊 This session <span style="color:#666;font-weight:400;">(resets when you reload this page)</span></label>
+  <div id="stats-grid-session" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+    gap:10px;margin-top:12px;"></div>
+</div>
+<div class="card">
+  <label>🌍 All-time <span style="color:#666;font-weight:400;">(shared across every session ever run on this Firebase project)</span></label>
+  <button class="ghost" id="stats-refresh" style="margin-bottom:12px;">🔄 Refresh</button>
+  <div id="stats-grid-alltime" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+    gap:10px;"></div>
+</div>
+</div>
+
+<!-- ============ CONNECT TAB ============ -->
+<div class="tab-panel active" id="tab-connect">
+  <div class="card">
+    <label>Your room code — give this to your friend</label>
+    <div id="link-box">
+      <span id="share-link" style="font-size:32px;font-weight:700;letter-spacing:3px;color:#fff;">------</span>
+      <button class="ghost" id="copy-link">Copy code</button>
+    </div>
+    <small class="hint">Send them the <code>player.html</code> file itself (Discord, text, USB, whatever) —
+    they open it, tick the agreement, type in this code, and you're connected. If their tab crashes or
+    reloads, the same code reconnects them right where things were.</small>
+    <div style="margin-top:10px;">
+      <span class="status-dot" id="conn-dot"></span>
+      <span id="conn-text">Waiting for friend to connect…</span>
+    </div>
+    <div style="margin-top:6px;">
+      <span class="status-dot" id="fb-dot"></span>
+      <span id="fb-text" style="font-size:12px;color:#888;">Checking Firebase connection…</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Their camera / mic (only if they allow it)</label>
+    <video id="their-cam" autoplay playsinline muted style="width:100%;max-width:320px;border-radius:8px;
+      background:#000;display:none;"></video>
+    <div id="cam-status" style="font-size:13px;color:#777;margin:8px 0;">No feed yet.</div>
+    <div class="row" style="margin-bottom:14px;">
+      <button class="ghost" id="toggle-cam">Hide video</button>
+      <button class="ghost" id="toggle-mic">Mute audio</button>
+      <button class="primary" id="take-snapshot">📸 Take snapshot</button>
+    </div>
+    <div id="snapshot-gallery" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+  </div>
+</div>
+
+<!-- ============ ASK TAB ============ -->
+<div class="tab-panel" id="tab-ask">
+  <div class="card">
+    <label>Question to show them</label>
+    <textarea id="question-input" placeholder="Do you watch Bundun?"></textarea>
+    <div class="row" style="margin-bottom:12px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="qmode" value="yesno" checked> Yes / No
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="qmode" value="multi"> Multiple choice
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="qmode" value="open"> They type an answer
+      </label>
+    </div>
+    <div id="yesno-labels-row" class="row" style="margin-bottom:14px;">
+      <div style="flex:1;">
+        <label style="font-size:12px;">"Yes" button says:</label>
+        <input type="text" id="yes-label" placeholder="Yes" value="Yes">
+      </div>
+      <div style="flex:1;">
+        <label style="font-size:12px;">"No" button says:</label>
+        <input type="text" id="no-label" placeholder="No" value="No">
+      </div>
+    </div>
+    <div id="multi-options-row" style="display:none;margin-bottom:14px;">
+      <label style="font-size:12px;">Options (comma-separated, 2-6)</label>
+      <input type="text" id="multi-options-input" placeholder="Option A, Option B, Option C">
+    </div>
+    <button class="primary" id="send-question">Send question</button>
+  </div>
+
+  <div class="card">
+    <label>Their answer (live)</label>
+    <div id="player-question-preview">—</div>
+    <div id="player-answer-preview">Waiting…</div>
+  </div>
+
+  <div class="card">
+    <label>Your reveal (what they'll actually see)</label>
+    <div class="row" style="margin-bottom:10px;">
+      <button class="yes" id="reveal-yes">Reveal: Yes</button>
+      <button class="no" id="reveal-no">Reveal: No</button>
+    </div>
+    <input type="text" id="custom-answer" placeholder="Custom answer text…">
+    <div class="row" style="margin-bottom:14px;">
+      <button class="primary" id="reveal-custom">Reveal custom</button>
+      <button class="ghost" id="reveal-correct">Reveal + play "correct" ding</button>
+      <button class="ghost" id="reveal-wrong">Reveal + play "wrong" buzz</button>
+    </div>
+    <button class="ghost" id="trigger-analyzing">Show "Analyzing..." only</button>
+    <button class="ghost" id="reset-question">Back to question screen</button>
+
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid #262626;">
+      <label>⚡ Lie detector verdict (dramatic full-screen reveal instead of plain text)</label>
+      <div class="row" style="margin-bottom:14px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;">Verdict</label>
+          <select id="lie-verdict-select">
+            <option value="truthful">Truthful</option>
+            <option value="lying">Deception detected</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Confidence %</label>
+          <input type="text" id="lie-percent-input" placeholder="e.g. 92" value="87">
+        </div>
+      </div>
+      <button class="no" id="lie-reveal-btn">⚡ Reveal lie detector verdict</button>
+      <small class="hint">Tip: hit "Show Analyzing..." first so the mic-reactive bars build suspense,
+      then reveal the verdict whenever you want.</small>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GAMES TAB ============ -->
+<div class="tab-panel" id="tab-games">
+  <div class="card">
+    <label>Choose a game</label>
+    <div class="row" style="margin-bottom:14px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="gametype" value="none" checked> None
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="gametype" value="tictactoe"> Tic-Tac-Toe
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="gametype" value="snake"> Snake
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="gametype" value="rps"> Rock Paper Scissors
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="gametype" value="reaction"> Reaction Test
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="gametype" value="whackamole"> Whack-a-Mole
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#ccc;margin:0;">
+        <input type="radio" name="gametype" value="quiz"> Quiz
+      </label>
+    </div>
+
+    <!-- TIC TAC TOE -->
+    <div id="ttt-config" style="display:none;">
+      <div class="row" style="margin-bottom:14px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;">Grid size</label>
+          <select id="ttt-size">
+            <option value="3">3 x 3</option>
+            <option value="4">4 x 4</option>
+            <option value="5">5 x 5</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Their symbol</label>
+          <input type="text" id="ttt-player-symbol" value="X" maxlength="1">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Your symbol</label>
+          <input type="text" id="ttt-admin-symbol" value="O" maxlength="1">
+        </div>
+      </div>
+      <button class="primary" id="ttt-start">Start Tic-Tac-Toe</button>
+      <button class="ghost" id="ttt-reset">Reset board</button>
+      <div style="margin-top:16px;">
+        <label>Live board (click any cell to rig it)</label>
+        <div id="ttt-admin-grid" style="display:grid;gap:6px;margin-bottom:10px;"></div>
+        <div class="row">
+          <button class="yes" id="ttt-force-player-win">Force: they win</button>
+          <button class="no" id="ttt-force-admin-win">Force: you win</button>
+          <button class="ghost" id="ttt-force-draw">Force: draw</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SNAKE -->
+    <div id="snake-config" style="display:none;">
+      <div class="row" style="margin-bottom:14px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;">Board size (cells)</label>
+          <input type="text" id="snake-size" value="15">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Apple count</label>
+          <input type="text" id="snake-apples" value="3">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Speed (ms per move)</label>
+          <input type="text" id="snake-speed" value="150">
+        </div>
+      </div>
+      <button class="primary" id="snake-start">Start Snake</button>
+      <button class="ghost" id="snake-reset">Reset game</button>
+      <div style="margin-top:16px;">
+        <label>Live view</label>
+        <canvas id="snake-admin-canvas" width="240" height="240" style="background:#0a0a0a;
+          border:1px solid #333;border-radius:8px;margin-bottom:10px;"></canvas>
+        <div id="snake-admin-score" style="font-size:13px;color:#ccc;margin-bottom:10px;">Score: 0</div>
+        <div class="row" style="margin-bottom:10px;">
+          <button class="ghost" id="snake-add-apple">+ Add apple</button>
+          <button class="ghost" id="snake-remove-apples">Clear apples</button>
+          <button class="ghost" id="snake-grow">Grow +3</button>
+          <button class="ghost" id="snake-shrink">Shrink -3</button>
+        </div>
+        <div class="row" style="margin-bottom:10px;">
+          <input type="text" id="snake-new-speed" placeholder="New speed (ms)" style="flex:1;margin-bottom:0;">
+          <button class="ghost" id="snake-set-speed">Set speed</button>
+        </div>
+        <button class="no" id="snake-force-gameover">Force game over</button>
+      </div>
+    </div>
+
+    <!-- RPS -->
+    <div id="rps-config" style="display:none;">
+      <button class="primary" id="rps-start">Start Rock Paper Scissors</button>
+      <button class="ghost" id="rps-reset-scores">Reset scores</button>
+      <div style="margin-top:16px;">
+        <label>Their current move</label>
+        <div id="rps-player-choice" style="font-size:16px;color:#fff;margin-bottom:10px;">Waiting...</div>
+        <label>Your move (pick after seeing theirs, or force below)</label>
+        <div class="row" style="margin-bottom:14px;">
+          <button class="ghost rps-admin-choice" data-choice="rock">🪨 Rock</button>
+          <button class="ghost rps-admin-choice" data-choice="paper">📄 Paper</button>
+          <button class="ghost rps-admin-choice" data-choice="scissors">✂️ Scissors</button>
+        </div>
+        <label>Or just force the outcome:</label>
+        <div class="row">
+          <button class="yes" id="rps-force-player-win">Force: they win</button>
+          <button class="no" id="rps-force-admin-win">Force: you win</button>
+          <button class="ghost" id="rps-force-tie">Force: tie</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REACTION TEST -->
+    <div id="reaction-config" style="display:none;">
+      <div class="row" style="margin-bottom:14px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;">Min delay before flash (ms)</label>
+          <input type="text" id="reaction-min-delay" value="1500">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Max delay before flash (ms)</label>
+          <input type="text" id="reaction-max-delay" value="4000">
+        </div>
+      </div>
+      <button class="primary" id="reaction-start">Start Reaction Test</button>
+      <button class="ghost" id="reaction-new-round">New round (same config)</button>
+      <div style="margin-top:16px;">
+        <label>Their actual result</label>
+        <div id="reaction-actual-result" style="font-size:16px;color:#fff;margin-bottom:10px;">Waiting...</div>
+        <label>Report a different result to them instead (rig it)</label>
+        <div class="row">
+          <input type="text" id="reaction-forced-ms" placeholder="e.g. 180" style="flex:1;margin-bottom:0;">
+          <button class="ghost" id="reaction-force">Send fake result</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHACK A MOLE -->
+    <div id="whackamole-config" style="display:none;">
+      <div class="row" style="margin-bottom:14px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;">Grid size (n x n)</label>
+          <input type="text" id="wam-grid-size" value="3">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Mole spawn rate (ms)</label>
+          <input type="text" id="wam-spawn-rate" value="900">
+        </div>
+      </div>
+      <button class="primary" id="wam-start">Start Whack-a-Mole</button>
+      <button class="ghost" id="wam-reset">Reset game</button>
+      <div style="margin-top:16px;">
+        <label>Their live score</label>
+        <div id="wam-live-score" style="font-size:16px;color:#fff;margin-bottom:10px;">Score: 0</div>
+        <div class="row" style="margin-bottom:10px;">
+          <input type="text" id="wam-new-rate" placeholder="New spawn rate (ms)" style="flex:1;margin-bottom:0;">
+          <button class="ghost" id="wam-set-rate">Set live speed</button>
+        </div>
+        <button class="no" id="wam-force-gameover">Force game over</button>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quiz-config" style="display:none;">
+      <label style="font-size:12px;">Topic for AI-generated questions</label>
+      <input type="text" id="quiz-topic" placeholder="e.g. 80s movies, our relationship, dumb trivia">
+      <div class="row" style="margin-bottom:14px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;">Number of questions</label>
+          <select id="quiz-count">
+            <option value="3">3</option>
+            <option value="5" selected>5</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;">Difficulty</label>
+          <select id="quiz-difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+            <option value="trick">Trick questions</option>
+          </select>
+        </div>
+      </div>
+      <button class="primary" id="quiz-generate">✨ Generate with AI</button>
+      <div id="quiz-gen-status" style="font-size:12px;color:#888;margin-top:8px;"></div>
+
+      <div id="quiz-preview" style="margin-top:14px;max-height:200px;overflow-y:auto;
+        font-size:13px;color:#ccc;display:none;background:#0d0d0d;border:1px solid #222;
+        border-radius:8px;padding:10px;"></div>
+
+      <div style="margin-top:14px;">
+        <label style="font-size:12px;">Or write your own (one per line: Question | OptA, OptB, OptC, OptD | correct option number)</label>
+        <textarea id="quiz-manual" placeholder="What color is the sky? | Blue, Red, Green, Purple | 1" style="min-height:80px;"></textarea>
+      </div>
+
+      <button class="primary" id="quiz-start">Start Quiz</button>
+
+      <div style="margin-top:16px;">
+        <label>Their current pick</label>
+        <div id="quiz-player-pick" style="font-size:15px;color:#fff;margin-bottom:10px;">Waiting...</div>
+        <label>Live score</label>
+        <div id="quiz-live-score" style="font-size:15px;color:#fff;margin-bottom:10px;">Score: 0</div>
+        <div class="row">
+          <button class="yes" id="quiz-mark-correct">Mark correct</button>
+          <button class="no" id="quiz-mark-wrong">Mark wrong</button>
+          <button class="ghost" id="quiz-next">Next question →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TEST TAB ============ -->
+<div class="tab-panel" id="tab-test">
+  <div class="card">
+    <label>Live preview of what they see</label>
+    <small class="hint" style="margin-bottom:12px;">This is a real player session in this same room —
+    trigger anything from the Ask/Games tabs or the panic/notification/bomb buttons above, and watch it
+    happen here instantly. Mic/camera sharing won't loop back to itself, but everything else (questions,
+    games, notifications, bomb, lie detector) works exactly like it will for your friend.</small>
+    <div class="row" style="margin-bottom:10px;">
+      <button class="ghost" id="test-reload">🔄 Reload preview</button>
+      <button class="ghost" id="test-open-tab">↗ Open in new tab</button>
+    </div>
+    <iframe id="test-iframe" style="width:100%;height:600px;border:1px solid #333;border-radius:10px;
+      background:#000;" src="about:blank"></iframe>
+  </div>
+</div>
+
+<!-- ============ HISTORY TAB ============ -->
+<div class="tab-panel" id="tab-history">
+  <div class="card">
+    <label>Session history</label>
+    <div id="history-log" style="font-size:13px;color:#ccc;max-height:400px;overflow-y:auto;margin-bottom:14px;">
+      <em style="color:#666;">Nothing yet this session.</em>
+    </div>
+    <button class="ghost" id="export-history">⬇ Export as text file</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+// ====== PASTE YOUR FIREBASE CONFIG HERE (same as player.html) ======
+const firebaseConfig = {
+  apiKey: "AIzaSyDyAKTWeowIA-Ohrcb-MIKHaVLwIq9Hh5A",
+  authDomain: "to-tell-my-wife-i-love-her.firebaseapp.com",
+  databaseURL: "https://to-tell-my-wife-i-love-her-default-rtdb.firebaseio.com",
+  projectId: "to-tell-my-wife-i-love-her",
+  storageBucket: "to-tell-my-wife-i-love-her.firebasestorage.app",
+  messagingSenderId: "717886106980",
+  appId: "1:717886106980:web:9b139d30aafd25f709de71"
+};
+// =====================================================================
+
+let db = null;
+if(location.protocol === "file:"){
+  const warn = document.createElement("div");
+  warn.style.cssText = "background:#5c1a1a;color:#fff;padding:10px 16px;border-radius:8px;" +
+    "font-size:12px;margin-bottom:16px;";
+  warn.textContent = "⚠️ Opened as a local file — camera/microphone sharing from your friend " +
+    "won't connect reliably here. Host this on GitHub Pages (or similar) and open it over https:// instead.";
+  document.body.insertBefore(warn, document.body.firstChild);
+}
+try{
+  if(firebaseConfig.databaseURL === "PASTE_YOUR_DATABASE_URL_HERE" || !firebaseConfig.databaseURL.startsWith("http")){
+    throw new Error("databaseURL not filled in yet");
+  }
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+}catch(e){
+  console.error("Firebase init failed:", e);
+  const warn = document.createElement("div");
+  warn.style.cssText = "background:#5c1a1a;color:#fff;padding:10px 16px;border-radius:8px;" +
+    "font-size:13px;margin-bottom:16px;";
+  warn.textContent = "Setup error: databaseURL is missing/invalid in admin.html — get it from " +
+    "Firebase console > Realtime Database > Data tab, and paste it in.";
+  document.body.insertBefore(warn, document.body.firstChild);
+}
+
+// ---- Tabs ----
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  });
+});
+
+// ---- Reconnect-friendly room code: reuse from URL if present, else generate new ----
+function makeRoomCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for(let i=0;i<6;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+let roomId = new URLSearchParams(location.search).get("room") || makeRoomCode();
+history.replaceState(null, "", "?room=" + roomId);
+document.getElementById("share-link").textContent = roomId;
+
+const testIframeSrc = () => `player.html?room=${roomId}`;
+document.getElementById("test-iframe").src = testIframeSrc();
+document.getElementById("test-reload").addEventListener("click", () => {
+  document.getElementById("test-iframe").src = testIframeSrc();
+});
+document.getElementById("test-open-tab").addEventListener("click", () => {
+  window.open(testIframeSrc(), "_blank");
+});
+
+document.getElementById("copy-link").addEventListener("click", () => {
+  navigator.clipboard.writeText(roomId);
+  document.getElementById("copy-link").textContent = "Copied!";
+  setTimeout(()=> document.getElementById("copy-link").textContent = "Copy code", 1500);
+});
+
+const roomRef = db ? db.ref("rooms/" + roomId) : null;
+// NOTE: does not wipe existing state — reopening admin.html with the same room code
+// (via the URL's ?room=... it just set) resumes the same session instead of resetting it.
+if(roomRef){
+  roomRef.once("value", (snap) => {
+    if(!snap.exists()){
+      roomRef.set({ status: "idle", question: "", answer: "", playerConnected: false });
+    }
+  }).catch(err => showFbError("Can't read database: " + err.message));
+}
+
+function showFbError(msg){
+  document.getElementById("fb-dot").classList.remove("on");
+  document.getElementById("fb-dot").style.background = "#e53935";
+  document.getElementById("fb-text").textContent = "Firebase error: " + msg;
+  document.getElementById("fb-text").style.color = "#ff8a80";
+}
+if(db){
+  db.ref(".info/connected").on("value", (snap) => {
+    const connected = snap.val() === true;
+    document.getElementById("fb-dot").classList.toggle("on", connected);
+    document.getElementById("fb-dot").style.background = connected ? "" : "#e53935";
+    document.getElementById("fb-text").textContent = connected
+      ? "Firebase: connected" : "Firebase: disconnected — check your internet or database rules";
+    document.getElementById("fb-text").style.color = connected ? "#888" : "#ff8a80";
+  }, (err) => showFbError(err.message));
+}else{
+  showFbError("config missing/invalid — see banner above");
+}
+
+// ----- Receive their camera feed -----
+if(roomRef){
+  const pc = new RTCPeerConnection({ iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+    { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+    { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" }
+  ] });
+  pc.ontrack = (e) => {
+    const vid = document.getElementById("their-cam");
+    vid.srcObject = e.streams[0];
+    vid.style.display = "block";
+    document.getElementById("cam-status").textContent = "Live";
+  };
+  pc.onicecandidate = (e) => { if(e.candidate) roomRef.child("webrtc/adminCandidates").push(e.candidate.toJSON()); };
+  pc.oniceconnectionstatechange = () => {
+    const state = pc.iceConnectionState;
+    console.log("WebRTC ICE state:", state);
+    const statusEl = document.getElementById("cam-status");
+    if(state === "connected" || state === "completed"){
+      statusEl.textContent = "Live";
+    }else if(state === "checking"){
+      statusEl.textContent = "Connecting (checking network paths)…";
+    }else if(state === "failed"){
+      statusEl.textContent = "Connection failed — their network may be blocking video. Trying relay...";
+    }else if(state === "disconnected"){
+      statusEl.textContent = "Connection lost, retrying...";
+    }
+  };
+  roomRef.child("webrtc/offer").on("value", async (snap) => {
+    if(snap.exists() && !pc.currentRemoteDescription){
+      await pc.setRemoteDescription(new RTCSessionDescription(JSON.parse(snap.val())));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      roomRef.child("webrtc/answer").set(JSON.stringify(answer));
+      document.getElementById("cam-status").textContent = "Connecting…";
+    }
+  });
+  roomRef.child("webrtc/playerCandidates").on("child_added", (snap) => {
+    pc.addIceCandidate(new RTCIceCandidate(snap.val())).catch(()=>{});
+  });
+}
+
+const historyLog = document.getElementById("history-log");
+let historyEntries = [];
+
+// ---------- STATS (Minecraft-style counters, auto-derived from history lines) ----------
+const STAT_DEFS = {
+  totalEvents:        { icon: "📋", label: "Total actions" },
+  questionsAsked:      { icon: "❓", label: "Questions asked" },
+  answersRevealed:      { icon: "🎭", label: "Answers revealed" },
+  riggedActions:      { icon: "😏", label: "Things rigged" },
+  tttGamesStarted:      { icon: "⭕", label: "Tic-Tac-Toe played" },
+  snakeGamesStarted:      { icon: "🐍", label: "Snake played" },
+  rpsGamesStarted:      { icon: "✂️", label: "RPS played" },
+  reactionGamesStarted:      { icon: "⚡", label: "Reaction tests" },
+  wamGamesStarted:      { icon: "🔨", label: "Whack-a-Mole played" },
+  quizGamesStarted:      { icon: "🧠", label: "Quizzes played" },
+  notificationsSent:      { icon: "🔔", label: "Fake notifications" },
+  buzzesSent:      { icon: "📳", label: "Phone buzzes" },
+  bombsSent:      { icon: "💣", label: "Bombs sent" },
+  daresSent:      { icon: "🎭", label: "Dares sent" },
+  truthsSent:      { icon: "💬", label: "Truths sent" },
+  callsSent:      { icon: "📞", label: "Fake calls" },
+  glitchesSent:      { icon: "💻", label: "Screen glitches" },
+  wheelSpins:      { icon: "🎡", label: "Wheel spins" },
+  voiceMessagesSent:      { icon: "🎙️", label: "Voice messages" },
+  sequenceStepsPlayed:      { icon: "🎬", label: "Sequence steps" },
+  escapeRoomsStarted:      { icon: "🔐", label: "Escape rooms started" },
+  escapeRoomsWon:      { icon: "🔓", label: "Escapes won" },
+  escapeRoomsLost:      { icon: "🔒", label: "Escapes failed" },
+  leaderboardSaves:      { icon: "🏆", label: "Scores saved" },
+  snapshotsTaken:      { icon: "📸", label: "Snapshots taken" },
+  panicPresses:      { icon: "🚨", label: "Panic presses" },
+  recapEndings:      { icon: "🏁", label: "Sessions recapped" }
+};
+const sessionStats = {};
+function bumpStat(key, amount){
+  amount = amount || 1;
+  sessionStats[key] = (sessionStats[key]||0) + amount;
+  if(db){
+    try{
+      db.ref("globalStats/"+key).set(firebase.database.ServerValue.increment(amount));
+    }catch(e){ /* ignore if increment unsupported */ }
+  }
+  renderStatsGrid("stats-grid-session", sessionStats);
+}
+const STAT_KEYWORD_RULES = [
+  [/You asked:/, "questionsAsked"],
+  [/You revealed:/, "answersRevealed"],
+  [/Rigged:/, "riggedActions"],
+  [/Started Tic-Tac-Toe/, "tttGamesStarted"],
+  [/Started Snake/, "snakeGamesStarted"],
+  [/Started Rock Paper Scissors/, "rpsGamesStarted"],
+  [/Started Reaction Test/, "reactionGamesStarted"],
+  [/Started Whack-a-Mole/, "wamGamesStarted"],
+  [/Started Quiz/, "quizGamesStarted"],
+  [/Sent fake notification/, "notificationsSent"],
+  [/Buzzed their phone/, "buzzesSent"],
+  [/Sent countdown bomb/, "bombsSent"],
+  [/Sent dare:/, "daresSent"],
+  [/Sent truth:/, "truthsSent"],
+  [/Sent fake call/, "callsSent"],
+  [/Triggered screen glitch/, "glitchesSent"],
+  [/Wheel landed on/, "wheelSpins"],
+  [/Sent a voice message/, "voiceMessagesSent"],
+  [/Sequence step:/, "sequenceStepsPlayed"],
+  [/Started Escape Room/, "escapeRoomsStarted"],
+  [/they escaped!/, "escapeRoomsWon"],
+  [/time ran out — trapped/, "escapeRoomsLost"],
+  [/Trapped them manually/, "escapeRoomsLost"],
+  [/Saved score:/, "leaderboardSaves"],
+  [/Took a snapshot/, "snapshotsTaken"],
+  [/Panic button pressed/, "panicPresses"],
+  [/Ended session with recap/, "recapEndings"]
+];
+function renderStatsGrid(elId, statsObj){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const keys = Object.keys(STAT_DEFS).filter(k => statsObj[k] > 0);
+  if(keys.length === 0){
+    el.innerHTML = `<em style="color:#666;font-size:13px;grid-column:1/-1;">No stats yet.</em>`;
+    return;
+  }
+  el.innerHTML = keys.map(k => `
+    <div class="stat-tile">
+      <div class="stat-icon">${STAT_DEFS[k].icon}</div>
+      <div class="stat-num">${statsObj[k]}</div>
+      <div class="stat-label">${STAT_DEFS[k].label}</div>
+    </div>
+  `).join("");
+}
+function loadAllTimeStats(){
+  if(!db) return;
+  document.getElementById("stats-grid-alltime").innerHTML = `<em style="color:#666;grid-column:1/-1;">Loading...</em>`;
+  db.ref("globalStats").once("value").then(snap => {
+    renderStatsGrid("stats-grid-alltime", snap.val() || {});
+  }).catch(err => {
+    document.getElementById("stats-grid-alltime").innerHTML =
+      `<span style="color:#ff8a80;grid-column:1/-1;">Couldn't load: ${err.message}</span>`;
+  });
+}
+document.getElementById("stats-refresh").addEventListener("click", loadAllTimeStats);
+document.querySelector('[data-tab="stats"]').addEventListener("click", loadAllTimeStats);
+renderStatsGrid("stats-grid-session", sessionStats);
+
+function addHistory(line){
+  historyEntries.push(line);
+  historyLog.innerHTML = historyEntries.map(l => `<div style="margin-bottom:6px;">${l}</div>`).join("");
+  historyLog.scrollTop = historyLog.scrollHeight;
+  bumpStat("totalEvents");
+  STAT_KEYWORD_RULES.forEach(([regex, key]) => { if(regex.test(line)) bumpStat(key); });
+}
+
+let lastLoggedAnswer = null;
+if(roomRef) roomRef.on("value", (snap) => {
+  const data = snap.val();
+  if(!data) return;
+  document.getElementById("conn-dot").classList.toggle("on", !!data.playerConnected);
+  document.getElementById("conn-text").textContent = data.playerConnected
+    ? "Friend is connected" : "Waiting for friend to connect…";
+  document.getElementById("player-question-preview").textContent = data.question
+    ? `"${data.question}"` : "—";
+  document.getElementById("player-answer-preview").textContent = data.playerAnswer
+    ? `They answered: ${data.playerAnswer}` : "Waiting…";
+
+  if(data.playerAnswer && data.playerAnswer !== lastLoggedAnswer){
+    lastLoggedAnswer = data.playerAnswer;
+    addHistory(`<span style="color:#8ab4f8;">Them:</span> "${data.question}" → <strong>${data.playerAnswer}</strong>`);
+  }
+}, (err) => showFbError("Can't read room data: " + err.message));
+
+// ============ ASK QUESTION ============
+document.querySelectorAll('input[name="qmode"]').forEach(el => {
+  el.addEventListener("change", () => {
+    const mode = document.querySelector('input[name="qmode"]:checked').value;
+    document.getElementById("yesno-labels-row").style.display = mode === "yesno" ? "flex" : "none";
+    document.getElementById("multi-options-row").style.display = mode === "multi" ? "block" : "none";
+  });
+});
+
+document.getElementById("send-question").addEventListener("click", () => {
+  if(!roomRef) return;
+  const q = document.getElementById("question-input").value.trim();
+  if(!q) return;
+  const mode = document.querySelector('input[name="qmode"]:checked').value;
+  const yesLabel = document.getElementById("yes-label").value.trim() || "Yes";
+  const noLabel = document.getElementById("no-label").value.trim() || "No";
+  const update = {
+    question: q, questionMode: mode, yesLabel, noLabel,
+    status: "asking", answer: "", playerAnswer: "", answerFeedback: null, verdictMode: false
+  };
+  let modeLabel = `${yesLabel} / ${noLabel}`;
+  if(mode === "multi"){
+    const opts = document.getElementById("multi-options-input").value.split(",").map(s=>s.trim()).filter(Boolean);
+    update.multiOptions = opts;
+    modeLabel = opts.join(" / ") || "no options set";
+  }
+  if(mode === "open") modeLabel = "open answer";
+  roomRef.update(update);
+  lastLoggedAnswer = null;
+  addHistory(`<span style="color:#aaa;">You asked:</span> "${q}" (${modeLabel})`);
+});
+
+document.getElementById("trigger-analyzing").addEventListener("click", () => {
+  if(roomRef) roomRef.update({ status: "analyzing" });
+});
+document.getElementById("reset-question").addEventListener("click", () => {
+  if(roomRef) roomRef.update({ status: "asking" });
+});
+
+function reveal(answer, feedback){
+  if(roomRef) roomRef.update({ answer, status: "answered", answerFeedback: feedback || null, verdictMode: false });
+  addHistory(`<span style="color:#4caf50;">You revealed:</span> <strong>${answer}</strong>`);
+}
+document.getElementById("reveal-yes").addEventListener("click", () => reveal(document.getElementById("yes-label").value.trim() || "Yes"));
+document.getElementById("reveal-no").addEventListener("click", () => reveal(document.getElementById("no-label").value.trim() || "No"));
+["yes-label","no-label"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => {
+    document.getElementById("reveal-yes").textContent = "Reveal: " + (document.getElementById("yes-label").value.trim() || "Yes");
+    document.getElementById("reveal-no").textContent = "Reveal: " + (document.getElementById("no-label").value.trim() || "No");
+  });
+});
+document.getElementById("reveal-custom").addEventListener("click", () => {
+  const val = document.getElementById("custom-answer").value.trim();
+  if(!val) return;
+  reveal(val);
+});
+document.getElementById("reveal-correct").addEventListener("click", () => {
+  const val = document.getElementById("custom-answer").value.trim() || "Correct!";
+  reveal(val, "correct");
+});
+document.getElementById("reveal-wrong").addEventListener("click", () => {
+  const val = document.getElementById("custom-answer").value.trim() || "Wrong!";
+  reveal(val, "wrong");
+});
+
+document.getElementById("lie-reveal-btn").addEventListener("click", () => {
+  if(!roomRef) return;
+  const verdictLabel = document.getElementById("lie-verdict-select").value;
+  const verdictPercent = parseInt(document.getElementById("lie-percent-input").value) || 50;
+  roomRef.update({
+    status: "answered",
+    verdictMode: true,
+    verdictLabel, verdictPercent,
+    answerFeedback: verdictLabel === "lying" ? "wrong" : "correct"
+  });
+  addHistory(`<span style="color:#4caf50;">⚡ Lie detector verdict:</span> ${verdictLabel === "lying" ? "DECEPTION" : "TRUTHFUL"} (${verdictPercent}%)`);
+});
+
+document.getElementById("toggle-cam").addEventListener("click", () => {
+  const vid = document.getElementById("their-cam");
+  const hidden = vid.style.display === "none";
+  vid.style.display = hidden ? "block" : "none";
+  document.getElementById("toggle-cam").textContent = hidden ? "Hide video" : "Show video";
+});
+document.getElementById("toggle-mic").addEventListener("click", () => {
+  const vid = document.getElementById("their-cam");
+  vid.muted = !vid.muted;
+  document.getElementById("toggle-mic").textContent = vid.muted ? "Unmute audio" : "Mute audio";
+  if(!vid.muted) vid.play().catch(()=>{});
+});
+
+// ---------- SNAPSHOTS ----------
+let snapshotCount = 0;
+document.getElementById("take-snapshot").addEventListener("click", () => {
+  const vid = document.getElementById("their-cam");
+  if(!vid.srcObject || vid.videoWidth === 0){
+    addHistory(`<span style="color:#ff8a80;">📸 Snapshot failed</span> — no live video yet`);
+    return;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = vid.videoWidth;
+  canvas.height = vid.videoHeight;
+  canvas.getContext("2d").drawImage(vid, 0, 0);
+  const dataUrl = canvas.toDataURL("image/png");
+  snapshotCount++;
+
+  const thumb = document.createElement("a");
+  thumb.href = dataUrl;
+  thumb.download = `snapshot-${roomId}-${snapshotCount}.png`;
+  thumb.title = "Click to download";
+  thumb.innerHTML = `<img src="${dataUrl}" style="width:80px;height:60px;object-fit:cover;
+    border-radius:6px;border:1px solid #333;">`;
+  document.getElementById("snapshot-gallery").appendChild(thumb);
+
+  addHistory(`<span style="color:#aaa;">📸 Took a snapshot</span> (#${snapshotCount})`);
+});
+
+// ============ GAMES ============
+document.querySelectorAll('input[name="gametype"]').forEach(el => {
+  el.addEventListener("change", () => {
+    const type = document.querySelector('input[name="gametype"]:checked').value;
+    document.getElementById("ttt-config").style.display = type === "tictactoe" ? "block" : "none";
+    document.getElementById("snake-config").style.display = type === "snake" ? "block" : "none";
+    document.getElementById("rps-config").style.display = type === "rps" ? "block" : "none";
+    document.getElementById("reaction-config").style.display = type === "reaction" ? "block" : "none";
+    document.getElementById("whackamole-config").style.display = type === "whackamole" ? "block" : "none";
+    document.getElementById("quiz-config").style.display = type === "quiz" ? "block" : "none";
+  });
+});
+
+// ---------- TIC TAC TOE ----------
+function tttStart(){
+  if(!roomRef) return;
+  const size = parseInt(document.getElementById("ttt-size").value);
+  const playerSymbol = document.getElementById("ttt-player-symbol").value.trim() || "X";
+  const adminSymbol = document.getElementById("ttt-admin-symbol").value.trim() || "O";
+  roomRef.child("game").set({
+    type: "tictactoe",
+    config: { size, playerSymbol, adminSymbol },
+    state: { board: Array(size*size).fill(""), turn: "player", winner: null }
+  });
+  roomRef.update({ status: "game" });
+  addHistory(`<span style="color:#aaa;">Started</span> Tic-Tac-Toe (${size}x${size})`);
+}
+document.getElementById("ttt-start").addEventListener("click", tttStart);
+document.getElementById("ttt-reset").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("game/config").once("value", snap => {
+    const cfg = snap.val() || { size: 3 };
+    roomRef.child("game/state").set({ board: Array(cfg.size*cfg.size).fill(""), turn: "player", winner: null });
+  });
+});
+let tttAdminSize = 3;
+function renderTTTAdminGrid(cfg, state){
+  const grid = document.getElementById("ttt-admin-grid");
+  const size = cfg.size || 3;
+  if(size !== tttAdminSize || grid.children.length !== size*size){
+    tttAdminSize = size;
+    grid.innerHTML = "";
+    grid.style.gridTemplateColumns = `repeat(${size}, 44px)`;
+    for(let i=0;i<size*size;i++){
+      const cell = document.createElement("div");
+      cell.style.cssText = "width:44px;height:44px;background:#0d0d0d;border:1px solid #333;" +
+        "border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;" +
+        "font-weight:700;color:#fff;cursor:pointer;";
+      cell.addEventListener("click", () => {
+        const board = (state && state.board) ? [...state.board] : Array(size*size).fill("");
+        const cur = board[i];
+        const pSym = cfg.playerSymbol || "X", aSym = cfg.adminSymbol || "O";
+        board[i] = cur === "" ? pSym : cur === pSym ? aSym : "";
+        roomRef.child("game/state/board").set(board);
+      });
+      grid.appendChild(cell);
+    }
+  }
+  const board = (state && state.board) || Array(size*size).fill("");
+  [...grid.children].forEach((cell,i) => cell.textContent = board[i] || "");
+}
+document.getElementById("ttt-force-player-win").addEventListener("click", () => {
+  if(roomRef) roomRef.child("game/state/winner").set("player");
+  addHistory(`<span style="color:#4caf50;">Rigged:</span> forced them to win Tic-Tac-Toe`);
+});
+document.getElementById("ttt-force-admin-win").addEventListener("click", () => {
+  if(roomRef) roomRef.child("game/state/winner").set("admin");
+  addHistory(`<span style="color:#4caf50;">Rigged:</span> forced you to win Tic-Tac-Toe`);
+});
+document.getElementById("ttt-force-draw").addEventListener("click", () => {
+  if(roomRef) roomRef.child("game/state/winner").set("draw");
+});
+
+// ---------- SNAKE ----------
+function snakeStart(){
+  if(!roomRef) return;
+  const boardSize = parseInt(document.getElementById("snake-size").value) || 15;
+  const appleCount = parseInt(document.getElementById("snake-apples").value) || 3;
+  const speedMs = parseInt(document.getElementById("snake-speed").value) || 150;
+  roomRef.child("game").set({
+    type: "snake",
+    config: { boardSize, appleCount, speedMs },
+    state: { snake: [], apples: [], score: 0, gameOver: false },
+    cmd: null
+  });
+  roomRef.update({ status: "game" });
+  addHistory(`<span style="color:#aaa;">Started</span> Snake (${boardSize}x${boardSize} board)`);
+}
+document.getElementById("snake-start").addEventListener("click", snakeStart);
+document.getElementById("snake-reset").addEventListener("click", () => sendSnakeCmd({ resetGame: true }));
+function sendSnakeCmd(cmd){
+  if(!roomRef) return;
+  roomRef.child("game/cmd").set({ ...cmd, id: Date.now() + Math.random() });
+}
+document.getElementById("snake-add-apple").addEventListener("click", () => sendSnakeCmd({ addApple: true }));
+document.getElementById("snake-remove-apples").addEventListener("click", () => sendSnakeCmd({ removeApples: true }));
+document.getElementById("snake-grow").addEventListener("click", () => sendSnakeCmd({ growSnake: 3 }));
+document.getElementById("snake-shrink").addEventListener("click", () => sendSnakeCmd({ shrinkSnake: 3 }));
+document.getElementById("snake-set-speed").addEventListener("click", () => {
+  const ms = parseInt(document.getElementById("snake-new-speed").value);
+  if(ms) sendSnakeCmd({ setSpeed: ms });
+});
+document.getElementById("snake-force-gameover").addEventListener("click", () => {
+  sendSnakeCmd({ forceGameOver: true });
+  addHistory(`<span style="color:#4caf50;">Rigged:</span> forced Snake game over`);
+});
+const snakeAdminCtx = document.getElementById("snake-admin-canvas").getContext("2d");
+function drawSnakeAdmin(cfg, state){
+  const size = cfg.boardSize || 15;
+  const canvas = document.getElementById("snake-admin-canvas");
+  const cellPx = canvas.width / size;
+  snakeAdminCtx.fillStyle = "#0a0a0a"; snakeAdminCtx.fillRect(0,0,canvas.width,canvas.height);
+  snakeAdminCtx.fillStyle = "#e53935";
+  (state.apples||[]).forEach(a => snakeAdminCtx.fillRect(a.x*cellPx+1, a.y*cellPx+1, cellPx-2, cellPx-2));
+  (state.snake||[]).forEach((s,i) => {
+    snakeAdminCtx.fillStyle = i===0 ? "#8bc34a" : "#4caf50";
+    snakeAdminCtx.fillRect(s.x*cellPx+1, s.y*cellPx+1, cellPx-2, cellPx-2);
+  });
+  document.getElementById("snake-admin-score").textContent =
+    state.gameOver ? `Game over — score: ${state.score||0}` : `Score: ${state.score||0}`;
+}
+
+// ---------- RPS ----------
+function rpsStart(){
+  if(!roomRef) return;
+  roomRef.child("game").set({
+    type: "rps", config: {},
+    state: { playerChoice: null, adminChoice: null, result: null, playerScore: 0, adminScore: 0 }
+  });
+  roomRef.update({ status: "game" });
+  addHistory(`<span style="color:#aaa;">Started</span> Rock Paper Scissors`);
+}
+document.getElementById("rps-start").addEventListener("click", rpsStart);
+document.getElementById("rps-reset-scores").addEventListener("click", () => {
+  if(roomRef) roomRef.child("game/state").update({ playerScore: 0, adminScore: 0, playerChoice: null, adminChoice: null, result: null });
+});
+function rpsResolve(playerChoice, adminChoice){
+  if(playerChoice === adminChoice) return "tie";
+  const beats = { rock: "scissors", paper: "rock", scissors: "paper" };
+  return beats[playerChoice] === adminChoice ? "player" : "admin";
+}
+document.querySelectorAll(".rps-admin-choice").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if(!roomRef) return;
+    roomRef.child("game/state").once("value", (snap) => {
+      const state = snap.val() || {};
+      const adminChoice = btn.dataset.choice;
+      const result = state.playerChoice ? rpsResolve(state.playerChoice, adminChoice) : null;
+      const update = { adminChoice, result };
+      if(result === "player") update.playerScore = (state.playerScore||0) + 1;
+      if(result === "admin") update.adminScore = (state.adminScore||0) + 1;
+      roomRef.child("game/state").update(update);
+    });
+  });
+});
+function rpsForce(result){
+  if(!roomRef) return;
+  roomRef.child("game/state").once("value", (snap) => {
+    const state = snap.val() || {};
+    const update = { result };
+    if(result === "player") update.playerScore = (state.playerScore||0) + 1;
+    if(result === "admin") update.adminScore = (state.adminScore||0) + 1;
+    roomRef.child("game/state").update(update);
+  });
+  addHistory(`<span style="color:#4caf50;">Rigged:</span> forced RPS result — ${result}`);
+}
+document.getElementById("rps-force-player-win").addEventListener("click", () => rpsForce("player"));
+document.getElementById("rps-force-admin-win").addEventListener("click", () => rpsForce("admin"));
+document.getElementById("rps-force-tie").addEventListener("click", () => rpsForce("tie"));
+
+// ---------- REACTION TEST ----------
+function reactionStart(){
+  if(!roomRef) return;
+  const minDelayMs = parseInt(document.getElementById("reaction-min-delay").value) || 1500;
+  const maxDelayMs = parseInt(document.getElementById("reaction-max-delay").value) || 4000;
+  roomRef.child("game").set({
+    type: "reaction", config: { minDelayMs, maxDelayMs }, state: {}
+  });
+  roomRef.update({ status: "game" });
+  addHistory(`<span style="color:#aaa;">Started</span> Reaction Test`);
+}
+document.getElementById("reaction-start").addEventListener("click", reactionStart);
+document.getElementById("reaction-new-round").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("game/config").once("value", snap => {
+    roomRef.child("game").update({ config: snap.val(), state: {} });
+  });
+});
+document.getElementById("reaction-force").addEventListener("click", () => {
+  const ms = document.getElementById("reaction-forced-ms").value.trim();
+  if(!ms || !roomRef) return;
+  roomRef.child("game/state/forcedResultMs").set(ms);
+  addHistory(`<span style="color:#4caf50;">Rigged:</span> sent fake reaction time — ${ms}ms`);
+});
+
+// ---------- WHACK A MOLE ----------
+function wamStart(){
+  if(!roomRef) return;
+  const gridSize = parseInt(document.getElementById("wam-grid-size").value) || 3;
+  const spawnRateMs = parseInt(document.getElementById("wam-spawn-rate").value) || 900;
+  roomRef.child("game").set({
+    type: "whackamole", config: { gridSize, spawnRateMs }, state: { score: 0 }, cmd: null
+  });
+  roomRef.update({ status: "game" });
+  addHistory(`<span style="color:#aaa;">Started</span> Whack-a-Mole (${gridSize}x${gridSize})`);
+}
+document.getElementById("wam-start").addEventListener("click", wamStart);
+document.getElementById("wam-reset").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("game/cmd").set({ resetGame: true, id: Date.now()+Math.random() });
+});
+document.getElementById("wam-set-rate").addEventListener("click", () => {
+  const ms = parseInt(document.getElementById("wam-new-rate").value);
+  if(ms && roomRef) roomRef.child("game/config/spawnRateMs").set(ms);
+});
+document.getElementById("wam-force-gameover").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("game/cmd").set({ forceGameOver: true, id: Date.now()+Math.random() });
+  addHistory(`<span style="color:#4caf50;">Rigged:</span> forced Whack-a-Mole game over`);
+});
+
+// ---------- QUIZ ----------
+let quizQuestions = [];
+
+function parseManualQuiz(text){
+  return text.split("\n").map(line => line.trim()).filter(Boolean).map(line => {
+    const parts = line.split("|");
+    if(parts.length < 3) return null;
+    const question = parts[0].trim();
+    const options = parts[1].split(",").map(o => o.trim()).filter(Boolean);
+    const correctIndex = parseInt(parts[2].trim()) - 1;
+    if(!question || options.length < 2 || isNaN(correctIndex)) return null;
+    return { question, options, correctIndex };
+  }).filter(Boolean);
+}
+
+function renderQuizPreview(){
+  const box = document.getElementById("quiz-preview");
+  if(quizQuestions.length === 0){ box.style.display = "none"; return; }
+  box.style.display = "block";
+  box.innerHTML = quizQuestions.map((q,i) =>
+    `<div style="margin-bottom:8px;"><strong>${i+1}. ${q.question}</strong><br>` +
+    q.options.map((o,oi) => `${oi===q.correctIndex ? "✅" : "•"} ${o}`).join(" &nbsp; ") +
+    `</div>`
+  ).join("");
+}
+
+document.getElementById("quiz-generate").addEventListener("click", async () => {
+  const topic = document.getElementById("quiz-topic").value.trim() || "general trivia";
+  const count = document.getElementById("quiz-count").value;
+  const difficulty = document.getElementById("quiz-difficulty").value;
+  const statusEl = document.getElementById("quiz-gen-status");
+  statusEl.textContent = "Generating with AI...";
+  statusEl.style.color = "#888";
+
+  const prompt = `Generate exactly ${count} multiple-choice quiz questions about "${topic}" at ${difficulty} difficulty. ` +
+    `Respond with ONLY a raw JSON array, no markdown, no code fences, no explanation. Each item must look like: ` +
+    `{"question": "...", "options": ["...","...","...","..."], "correctIndex": 0}. ` +
+    `correctIndex is the 0-based index of the correct option in the options array. Exactly 4 options each.`;
+
+  try{
+    const res = await fetch(`https://text.pollinations.ai/${encodeURIComponent(prompt)}`);
+    let text = await res.text();
+    text = text.trim().replace(/^```json/i, "").replace(/^```/, "").replace(/```$/, "").trim();
+    const firstBracket = text.indexOf("[");
+    const lastBracket = text.lastIndexOf("]");
+    if(firstBracket >= 0 && lastBracket > firstBracket){
+      text = text.slice(firstBracket, lastBracket+1);
+    }
+    const parsed = JSON.parse(text);
+    quizQuestions = parsed.filter(q => q.question && Array.isArray(q.options) && q.options.length >= 2)
+      .map(q => ({ question: q.question, options: q.options, correctIndex: q.correctIndex || 0 }));
+    if(quizQuestions.length === 0) throw new Error("AI returned no usable questions");
+    statusEl.textContent = `Generated ${quizQuestions.length} questions — review below, then Start Quiz.`;
+    statusEl.style.color = "#8bc34a";
+    renderQuizPreview();
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = "AI generation failed (" + err.message + "). Try again, or write questions manually below.";
+    statusEl.style.color = "#ff8a80";
+  }
+});
+
+document.getElementById("quiz-start").addEventListener("click", () => {
+  if(!roomRef) return;
+  const manual = parseManualQuiz(document.getElementById("quiz-manual").value);
+  const questions = manual.length > 0 ? manual : quizQuestions;
+  if(questions.length === 0){
+    document.getElementById("quiz-gen-status").textContent = "No questions yet — generate with AI or write your own.";
+    document.getElementById("quiz-gen-status").style.color = "#ff8a80";
+    return;
+  }
+  roomRef.child("game").set({
+    type: "quiz",
+    config: { questions },
+    state: { qIndex: 0, score: 0, playerAnswerIndex: null, revealed: null, correct: null }
+  });
+  roomRef.update({ status: "game" });
+  addHistory(`<span style="color:#aaa;">Started</span> Quiz (${questions.length} questions)`);
+});
+
+document.getElementById("quiz-mark-correct").addEventListener("click", () => quizMark(true));
+document.getElementById("quiz-mark-wrong").addEventListener("click", () => quizMark(false));
+function quizMark(correct){
+  if(!roomRef) return;
+  roomRef.child("game/state").once("value", (snap) => {
+    const state = snap.val() || {};
+    const score = correct ? (state.score||0) + 1 : (state.score||0);
+    roomRef.child("game/state").update({ correct, revealed: Date.now(), score });
+  });
+  addHistory(`<span style="color:#aaa;">Quiz:</span> marked ${correct ? "correct ✅" : "wrong ❌"}`);
+}
+document.getElementById("quiz-next").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("game").once("value", (snap) => {
+    const game = snap.val() || {};
+    const state = game.state || {};
+    const total = (game.config && game.config.questions || []).length;
+    const nextIndex = (state.qIndex||0) + 1;
+    if(nextIndex >= total){
+      addHistory(`<span style="color:#4caf50;">Quiz finished</span> — final score ${state.score||0}/${total}`);
+      return;
+    }
+    roomRef.child("game/state").update({ qIndex: nextIndex, playerAnswerIndex: null, revealed: null, correct: null });
+  });
+});
+
+// ---------- Mirror game state live on admin screen ----------
+if(roomRef) roomRef.child("game").on("value", (snap) => {
+  const game = snap.val();
+  if(!game) return;
+  if(game.type === "tictactoe") renderTTTAdminGrid(game.config || {size:3}, game.state || {});
+  if(game.type === "snake") drawSnakeAdmin(game.config || {boardSize:15}, game.state || {});
+  if(game.type === "rps"){
+    document.getElementById("rps-player-choice").textContent =
+      game.state && game.state.playerChoice ? game.state.playerChoice : "Waiting...";
+  }
+  if(game.type === "reaction"){
+    const s = game.state || {};
+    document.getElementById("reaction-actual-result").textContent =
+      s.lastResultMs !== undefined ? `${s.lastResultMs}${typeof s.lastResultMs === "number" ? "ms" : ""}` : "Waiting...";
+  }
+  if(game.type === "whackamole"){
+    document.getElementById("wam-live-score").textContent = `Score: ${(game.state && game.state.score) || 0}`;
+  }
+  if(game.type === "quiz"){
+    const state = game.state || {};
+    const questions = (game.config && game.config.questions) || [];
+    const q = questions[state.qIndex || 0];
+    document.getElementById("quiz-player-pick").textContent =
+      (q && state.playerAnswerIndex !== null && state.playerAnswerIndex !== undefined)
+        ? q.options[state.playerAnswerIndex] : "Waiting...";
+    document.getElementById("quiz-live-score").textContent =
+      `Score: ${state.score || 0} — Question ${(state.qIndex||0)+1} of ${questions.length}`;
+  }
+});
+
+// ---------- FAKE NOTIFICATIONS ----------
+function sendNotif(icon, title, message){
+  if(!roomRef || !message) return;
+  roomRef.child("notif").set({ icon, title, message, id: Date.now() + Math.random() });
+  addHistory(`<span style="color:#aaa;">📬 Sent fake notification:</span> "${title}: ${message}"`);
+}
+document.querySelectorAll(".notif-preset").forEach(btn => {
+  btn.addEventListener("click", () => sendNotif(btn.dataset.icon, btn.dataset.title, btn.dataset.msg));
+});
+document.getElementById("notif-send").addEventListener("click", () => {
+  const title = document.getElementById("notif-title").value.trim() || "Notification";
+  const msg = document.getElementById("notif-msg").value.trim();
+  if(!msg) return;
+  sendNotif("🔔", title, msg);
+  document.getElementById("notif-msg").value = "";
+});
+
+document.getElementById("buzz-send").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("buzz").set({ pattern: [200,100,200,100,400], durationMs: 1200, id: Date.now() + Math.random() });
+  addHistory(`<span style="color:#aaa;">📳 Buzzed their phone</span>`);
+});
+
+// ---------- COUNTDOWN BOMB ----------
+document.getElementById("bomb-send").addEventListener("click", () => {
+  if(!roomRef) return;
+  const seconds = parseInt(document.getElementById("bomb-seconds").value) || 20;
+  let wireCount = parseInt(document.getElementById("bomb-wire-count").value) || 4;
+  wireCount = Math.max(2, Math.min(8, wireCount));
+  const message = document.getElementById("bomb-message-input").value.trim();
+  const correctSel = document.getElementById("bomb-correct-wire").value;
+  let correctWireIdx = correctSel === "random" ? -1 : parseInt(correctSel);
+  if(correctWireIdx >= wireCount) correctWireIdx = -1;
+  if(correctWireIdx === -1) correctWireIdx = Math.floor(Math.random()*wireCount);
+  roomRef.child("bomb").set({ seconds, wireCount, correctWireIdx, message, id: Date.now() + Math.random(), outcome: null });
+  document.getElementById("bomb-outcome-status").textContent = "Armed — waiting...";
+  document.getElementById("bomb-outcome-status").style.color = "#888";
+  addHistory(`<span style="color:#aaa;">💣 Sent countdown bomb</span> (${seconds}s, ${wireCount} wires)`);
+});
+if(roomRef) roomRef.child("bomb/outcome").on("value", (snap) => {
+  const outcome = snap.val();
+  const el = document.getElementById("bomb-outcome-status");
+  if(outcome === "defused"){ el.textContent = "They defused it ✅"; el.style.color = "#8bc34a"; }
+  if(outcome === "exploded"){ el.textContent = "It exploded on them 💥"; el.style.color = "#ff8a80"; }
+});
+
+// ---------- DARE CARD ----------
+function sendDare(text, seconds){
+  if(!roomRef || !text) return;
+  roomRef.child("dare").set({ text, seconds: seconds || 0, id: Date.now() + Math.random(), outcome: null });
+  document.getElementById("dare-outcome-status").textContent = "Sent — waiting...";
+  document.getElementById("dare-outcome-status").style.color = "#888";
+  addHistory(`<span style="color:#aaa;">🎭 Sent dare:</span> "${text}"`);
+}
+document.querySelectorAll(".dare-preset").forEach(btn => {
+  btn.addEventListener("click", () => sendDare(btn.dataset.text, 15));
+});
+document.getElementById("dare-send").addEventListener("click", () => {
+  const text = document.getElementById("dare-text-input").value.trim();
+  const seconds = parseInt(document.getElementById("dare-seconds-input").value) || 0;
+  if(!text) return;
+  sendDare(text, seconds);
+  document.getElementById("dare-text-input").value = "";
+});
+if(roomRef) roomRef.child("dare/outcome").on("value", (snap) => {
+  const outcome = snap.val();
+  const el = document.getElementById("dare-outcome-status");
+  if(outcome === "done"){ el.textContent = "They completed it ✅"; el.style.color = "#8bc34a"; }
+  if(outcome === "timeout"){ el.textContent = "Time ran out on them ⏱️"; el.style.color = "#ff8a80"; }
+});
+
+// ---------- TRUTH CARD ----------
+function sendTruth(text){
+  if(!roomRef || !text) return;
+  roomRef.child("truth").set({ text, id: Date.now() + Math.random(), outcome: null });
+  document.getElementById("truth-answer-display").style.display = "none";
+  addHistory(`<span style="color:#aaa;">💬 Sent truth:</span> "${text}"`);
+}
+document.querySelectorAll(".truth-preset").forEach(btn => {
+  btn.addEventListener("click", () => sendTruth(btn.dataset.text));
+});
+document.getElementById("truth-send").addEventListener("click", () => {
+  const text = document.getElementById("truth-text-input").value.trim();
+  if(!text) return;
+  sendTruth(text);
+  document.getElementById("truth-text-input").value = "";
+});
+if(roomRef) roomRef.child("truth/outcome").on("value", (snap) => {
+  const answer = snap.val();
+  const el = document.getElementById("truth-answer-display");
+  if(answer){
+    el.style.display = "block";
+    el.textContent = `Their answer: "${answer}"`;
+    addHistory(`<span style="color:#8ab4f8;">Truth answer:</span> "${answer}"`);
+  }
+});
+
+// ---------- FAKE CALL ----------
+document.getElementById("call-send").addEventListener("click", () => {
+  if(!roomRef) return;
+  const name = document.getElementById("call-name-input").value.trim() || "Unknown";
+  roomRef.child("call").set({ name, id: Date.now() + Math.random(), outcome: null });
+  document.getElementById("call-outcome-status").textContent = "Ringing...";
+  document.getElementById("call-outcome-status").style.color = "#888";
+  addHistory(`<span style="color:#aaa;">📞 Sent fake call from:</span> "${name}"`);
+});
+if(roomRef) roomRef.child("call/outcome").on("value", (snap) => {
+  const outcome = snap.val();
+  const el = document.getElementById("call-outcome-status");
+  if(outcome === "accepted"){ el.textContent = "They accepted 📞"; el.style.color = "#8bc34a"; }
+  if(outcome === "declined"){ el.textContent = "They declined ✕"; el.style.color = "#ff8a80"; }
+});
+
+// ---------- SCREEN GLITCH ----------
+document.getElementById("glitch-send").addEventListener("click", () => {
+  if(!roomRef) return;
+  const text = document.getElementById("glitch-text-input").value.trim() || "SYSTEM ERROR\nRecovering data...";
+  const seconds = parseInt(document.getElementById("glitch-seconds-input").value) || 4;
+  roomRef.child("glitch").set({ text, seconds, id: Date.now() + Math.random() });
+  addHistory(`<span style="color:#aaa;">💻 Triggered screen glitch</span> (${seconds}s)`);
+});
+
+// ---------- SPIN THE WHEEL ----------
+function getWheelOptions(){
+  return document.getElementById("wheel-options-input").value.split(",").map(s => s.trim()).filter(Boolean);
+}
+document.getElementById("wheel-options-input").addEventListener("input", () => {
+  const opts = getWheelOptions();
+  const sel = document.getElementById("wheel-rig-select");
+  sel.innerHTML = `<option value="random">Random result</option>` +
+    opts.map((o,i) => `<option value="${i}">Rig: ${o}</option>`).join("");
+});
+
+let wheelSpinning = false;
+document.getElementById("wheel-spin-btn").addEventListener("click", () => {
+  if(wheelSpinning || !roomRef) return;
+  const opts = getWheelOptions();
+  if(opts.length === 0) return;
+  const rigSel = document.getElementById("wheel-rig-select").value;
+  const finalIdx = rigSel === "random" ? Math.floor(Math.random()*opts.length) : parseInt(rigSel);
+
+  wheelSpinning = true;
+  const display = document.getElementById("wheel-spin-display");
+  let ticks = 0;
+  const totalTicks = 18;
+  const spinInterval = setInterval(() => {
+    display.textContent = opts[Math.floor(Math.random()*opts.length)];
+    ticks++;
+    if(ticks >= totalTicks){
+      clearInterval(spinInterval);
+      const result = opts[finalIdx] || opts[0];
+      display.textContent = "🎯 " + result;
+      wheelSpinning = false;
+      roomRef.child("wheel").set({ result, id: Date.now() + Math.random() });
+      addHistory(`<span style="color:#f9a825;">🎡 Wheel landed on:</span> "${result}"`);
+    }
+  }, 120);
+});
+
+// ---------- VOICE MESSAGE ----------
+let voiceMediaRecorder = null;
+let voiceChunks = [];
+let voiceBlob = null;
+let voiceStream = null;
+
+async function ensureVoiceMic(){
+  if(voiceStream) return voiceStream;
+  voiceStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  return voiceStream;
+}
+
+function startVoiceRecording(){
+  ensureVoiceMic().then(stream => {
+    voiceChunks = [];
+    voiceMediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm;codecs=opus" });
+    voiceMediaRecorder.ondataavailable = e => { if(e.data.size > 0) voiceChunks.push(e.data); };
+    voiceMediaRecorder.onstop = () => {
+      voiceBlob = new Blob(voiceChunks, { type: "audio/webm" });
+      const url = URL.createObjectURL(voiceBlob);
+      document.getElementById("voice-preview-audio").src = url;
+      document.getElementById("voice-preview-row").style.display = "block";
+      document.getElementById("voice-record-status").textContent =
+        `Recorded ${(voiceBlob.size/1024).toFixed(0)}KB`;
+    };
+    voiceMediaRecorder.start();
+    document.getElementById("voice-record-status").textContent = "🔴 Recording...";
+  }).catch(err => {
+    document.getElementById("voice-record-status").textContent = "Mic permission denied";
+  });
+}
+function stopVoiceRecording(){
+  if(voiceMediaRecorder && voiceMediaRecorder.state === "recording"){
+    voiceMediaRecorder.stop();
+  }
+}
+
+const voiceBtn = document.getElementById("voice-record-btn");
+let voiceIsRecording = false;
+voiceBtn.addEventListener("click", () => {
+  if(!voiceIsRecording){
+    voiceIsRecording = true;
+    voiceBtn.textContent = "⏹ Stop recording";
+    startVoiceRecording();
+  }else{
+    voiceIsRecording = false;
+    voiceBtn.textContent = "🔴 Start recording";
+    stopVoiceRecording();
+  }
+});
+
+document.getElementById("voice-discard-btn").addEventListener("click", () => {
+  voiceBlob = null;
+  document.getElementById("voice-preview-row").style.display = "none";
+  document.getElementById("voice-record-status").textContent = "Not recording";
+  voiceIsRecording = false;
+  voiceBtn.textContent = "🔴 Start recording";
+});
+
+document.getElementById("voice-send-btn").addEventListener("click", () => {
+  if(!voiceBlob || !roomRef) return;
+  if(voiceBlob.size > 700000){
+    document.getElementById("voice-record-status").textContent =
+      "Clip too long/large — keep it shorter and try again.";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    roomRef.child("voice").set({ dataUrl: reader.result, id: Date.now() + Math.random() });
+    document.getElementById("voice-preview-row").style.display = "none";
+    document.getElementById("voice-record-status").textContent = "Sent!";
+    addHistory(`<span style="color:#8ab4f8;">🎙️ Sent a voice message</span> (${(voiceBlob.size/1024).toFixed(0)}KB)`);
+    voiceBlob = null;
+    voiceIsRecording = false;
+    voiceBtn.textContent = "🔴 Start recording";
+  };
+  reader.readAsDataURL(voiceBlob);
+});
+
+// ---------- SEQUENCE BUILDER ----------
+let sequenceSteps = [];
+let sequenceRunning = false;
+let sequenceTimeoutHandle = null;
+
+const seqTypeLabels = {
+  notif: "🔔 Notification", dare: "🎭 Dare", truth: "💬 Truth",
+  bomb: "💣 Bomb", call: "📞 Call", glitch: "💻 Glitch", question: "❓ Question"
+};
+
+function renderSeqList(){
+  const box = document.getElementById("seq-list");
+  if(sequenceSteps.length === 0){
+    box.innerHTML = `<em style="color:#666;font-size:13px;">No steps yet — add some above.</em>`;
+    return;
+  }
+  box.innerHTML = sequenceSteps.map((step, i) => `
+    <div style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;
+      border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:13px;">
+      <span style="color:#666;">${i+1}.</span>
+      <span style="flex:1;">${seqTypeLabels[step.type]} — "${step.text}" <span style="color:#666;">(wait ${step.delay}s)</span></span>
+      <button class="ghost seq-remove" data-idx="${i}" style="padding:4px 10px;font-size:12px;">✕</button>
+    </div>
+  `).join("");
+  document.querySelectorAll(".seq-remove").forEach(btn => {
+    btn.addEventListener("click", () => {
+      sequenceSteps.splice(parseInt(btn.dataset.idx), 1);
+      renderSeqList();
+    });
+  });
+}
+renderSeqList();
+
+document.getElementById("seq-add-step").addEventListener("click", () => {
+  const type = document.getElementById("seq-step-type").value;
+  const text = document.getElementById("seq-step-text").value.trim();
+  const delay = parseInt(document.getElementById("seq-step-delay").value) || 0;
+  if(!text) return;
+  sequenceSteps.push({ type, text, delay });
+  document.getElementById("seq-step-text").value = "";
+  renderSeqList();
+});
+
+document.getElementById("seq-clear").addEventListener("click", () => {
+  sequenceSteps = [];
+  renderSeqList();
+});
+
+function runSeqStep(step){
+  if(step.type === "notif") sendNotif("🔔", "Notification", step.text);
+  if(step.type === "dare") sendDare(step.text, 20);
+  if(step.type === "truth") sendTruth(step.text);
+  if(step.type === "call") roomRef && roomRef.child("call").set({ name: step.text, id: Date.now()+Math.random(), outcome: null });
+  if(step.type === "glitch") roomRef && roomRef.child("glitch").set({ text: step.text, seconds: 4, id: Date.now()+Math.random() });
+  if(step.type === "bomb"){
+    const seconds = parseInt(step.text) || 20;
+    roomRef && roomRef.child("bomb").set({ seconds, wireCount: 4, correctWireIdx: Math.floor(Math.random()*4),
+      message: "Cut the correct wire!", id: Date.now()+Math.random(), outcome: null });
+  }
+  if(step.type === "question" && roomRef){
+    roomRef.update({ question: step.text, questionMode: "yesno", yesLabel: "Yes", noLabel: "No",
+      status: "asking", answer: "", playerAnswer: "", answerFeedback: null, verdictMode: false });
+  }
+  addHistory(`<span style="color:#ba68c8;">🎬 Sequence step:</span> ${seqTypeLabels[step.type]} — "${step.text}"`);
+}
+
+function playSequence(idx){
+  if(!sequenceRunning || idx >= sequenceSteps.length){
+    sequenceRunning = false;
+    document.getElementById("seq-status").textContent = idx >= sequenceSteps.length ? "Sequence finished." : "Stopped.";
+    return;
+  }
+  const step = sequenceSteps[idx];
+  document.getElementById("seq-status").textContent = `Step ${idx+1} of ${sequenceSteps.length} in ${step.delay}s...`;
+  sequenceTimeoutHandle = setTimeout(() => {
+    if(!sequenceRunning) return;
+    runSeqStep(step);
+    document.getElementById("seq-status").textContent = `Playing step ${idx+1} of ${sequenceSteps.length}`;
+    playSequence(idx+1);
+  }, step.delay * 1000);
+}
+
+document.getElementById("seq-play").addEventListener("click", () => {
+  if(sequenceSteps.length === 0) return;
+  sequenceRunning = true;
+  playSequence(0);
+});
+document.getElementById("seq-stop").addEventListener("click", () => {
+  sequenceRunning = false;
+  if(sequenceTimeoutHandle) clearTimeout(sequenceTimeoutHandle);
+  document.getElementById("seq-status").textContent = "Stopped.";
+});
+
+// ---------- ESCAPE ROOM ----------
+let escapeStages = [];
+let escapeCheckHandle = null;
+
+const escapeTypeLabels = {
+  tictactoe: "Tic-Tac-Toe", whackamole: "Whack-a-Mole", rps: "Rock Paper Scissors", bomb: "Cut the wire"
+};
+
+function renderEscapeStageList(){
+  const box = document.getElementById("escape-stage-list");
+  if(escapeStages.length === 0){
+    box.innerHTML = `<em style="color:#666;font-size:13px;">No stages yet — add some above.</em>`;
+    return;
+  }
+  box.innerHTML = escapeStages.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #222;
+      border-radius:8px;padding:8px 12px;margin-bottom:6px;font-size:13px;">
+      <span style="color:#666;">${i+1}.</span>
+      <span style="flex:1;">${escapeTypeLabels[s.type]} — "${s.label}"</span>
+      <button class="ghost escape-remove-stage" data-idx="${i}" style="padding:4px 10px;font-size:12px;">✕</button>
+    </div>
+  `).join("");
+  document.querySelectorAll(".escape-remove-stage").forEach(btn => {
+    btn.addEventListener("click", () => {
+      escapeStages.splice(parseInt(btn.dataset.idx), 1);
+      renderEscapeStageList();
+    });
+  });
+}
+renderEscapeStageList();
+
+document.getElementById("escape-add-stage").addEventListener("click", () => {
+  const type = document.getElementById("escape-stage-type").value;
+  const label = document.getElementById("escape-stage-label").value.trim() || escapeTypeLabels[type];
+  escapeStages.push({ type, label });
+  document.getElementById("escape-stage-label").value = "";
+  renderEscapeStageList();
+});
+
+function startEscapeStageGame(type){
+  if(!roomRef) return;
+  if(type === "tictactoe"){
+    roomRef.child("game").set({
+      type: "tictactoe", config: { size: 3, playerSymbol: "X", adminSymbol: "O" },
+      state: { board: Array(9).fill(""), turn: "player", winner: null }
+    });
+  }else if(type === "whackamole"){
+    roomRef.child("game").set({
+      type: "whackamole", config: { gridSize: 3, spawnRateMs: 900 }, state: { score: 0 }, cmd: null
+    });
+  }else if(type === "rps"){
+    roomRef.child("game").set({
+      type: "rps", config: {},
+      state: { playerChoice: null, adminChoice: null, result: null, playerScore: 0, adminScore: 0 }
+    });
+  }else if(type === "bomb"){
+    roomRef.child("bomb").set({
+      seconds: 25, wireCount: 4, correctWireIdx: Math.floor(Math.random()*4),
+      message: "Cut the correct wire to clear this stage.", id: Date.now()+Math.random(), outcome: null
+    });
+  }
+  if(type !== "bomb") roomRef.update({ status: "game" });
+}
+
+document.getElementById("escape-start-btn").addEventListener("click", () => {
+  if(!roomRef || escapeStages.length === 0) return;
+  const minutes = parseFloat(document.getElementById("escape-time-limit").value) || 10;
+  const deadline = Date.now() + minutes*60000;
+  window._escapeTotalSeconds = Math.round(minutes*60);
+  roomRef.child("escape").set({
+    status: "active", stages: escapeStages, currentIndex: 0, deadline,
+    id: Date.now() + Math.random()
+  });
+  startEscapeStageGame(escapeStages[0].type);
+  document.getElementById("escape-live-status").style.display = "block";
+  document.getElementById("escape-save-row").style.display = "none";
+  addHistory(`<span style="color:#ff8a65;">🔐 Started Escape Room</span> (${escapeStages.length} stages, ${minutes}min)`);
+
+  if(escapeCheckHandle) clearInterval(escapeCheckHandle);
+  escapeCheckHandle = setInterval(() => {
+    roomRef.child("escape").once("value", (snap) => {
+      const escape = snap.val();
+      if(!escape || escape.status !== "active"){
+        clearInterval(escapeCheckHandle);
+        if(escape){
+          document.getElementById("escape-status-text").textContent =
+            escape.status === "won" ? "🔓 They escaped!" : "🔒 They got trapped.";
+          if(escape.status === "lost"){
+            addHistory(`<span style="color:#ff8a80;">🔒 Escape Room ended:</span> time ran out — trapped`);
+          }
+          if(escape.status === "won"){
+            const remainingAtWin = Math.max(0, Math.round((escape.deadline - Date.now())/1000));
+            window._escapeElapsedSeconds = Math.max(1, (window._escapeTotalSeconds||600) - remainingAtWin);
+            window._escapeStageCount = (escape.stages||[]).length;
+            document.getElementById("escape-save-row").style.display = "block";
+          }
+        }
+        return;
+      }
+      const stages = escape.stages || [];
+      const idx = escape.currentIndex || 0;
+      document.getElementById("escape-status-text").textContent =
+        `Stage ${idx+1} of ${stages.length}: ${stages[idx] ? stages[idx].label : ""}`;
+      const remaining = Math.max(0, Math.round((escape.deadline - Date.now())/1000));
+      const m = Math.floor(remaining/60), s = remaining%60;
+      document.getElementById("escape-status-timer").textContent = `${m}:${s.toString().padStart(2,"0")}`;
+    });
+  }, 1000);
+});
+
+document.getElementById("escape-advance-btn").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("escape").once("value", (snap) => {
+    const escape = snap.val();
+    if(!escape || escape.status !== "active") return;
+    const stages = escape.stages || [];
+    const nextIdx = (escape.currentIndex || 0) + 1;
+    if(nextIdx >= stages.length){
+      roomRef.child("escape").update({ status: "won" });
+      addHistory(`<span style="color:#4caf50;">🔓 Escape Room:</span> final stage cleared — they escaped!`);
+    }else{
+      roomRef.child("escape").update({ currentIndex: nextIdx });
+      startEscapeStageGame(stages[nextIdx].type);
+      addHistory(`<span style="color:#aaa;">🔐 Escape Room:</span> advanced to stage ${nextIdx+1}`);
+    }
+  });
+});
+
+document.getElementById("escape-trap-btn").addEventListener("click", () => {
+  if(!roomRef) return;
+  roomRef.child("escape").update({ status: "lost" });
+  addHistory(`<span style="color:#ff8a80;">🔒 Trapped them manually</span> in the Escape Room`);
+});
+
+document.getElementById("escape-save-btn").addEventListener("click", () => {
+  if(!db) return;
+  const name = document.getElementById("escape-save-name").value.trim() || "Anonymous";
+  const elapsedSeconds = window._escapeElapsedSeconds || 0;
+  const stageCount = window._escapeStageCount || 0;
+  db.ref("leaderboard").push({ name, elapsedSeconds, stageCount, ts: Date.now() });
+  document.getElementById("escape-save-row").style.display = "none";
+  addHistory(`<span style="color:#4caf50;">🏆 Saved score:</span> ${name} — ${elapsedSeconds}s`);
+});
+
+function formatLbTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return `${m}:${s.toString().padStart(2,"0")}`;
+}
+function loadLeaderboard(){
+  if(!db) return;
+  const listEl = document.getElementById("leaderboard-list");
+  listEl.innerHTML = `<em style="color:#666;">Loading...</em>`;
+  db.ref("leaderboard").orderByChild("elapsedSeconds").limitToFirst(15).once("value")
+    .then(snap => {
+      const entries = [];
+      snap.forEach(child => entries.push(child.val()));
+      if(entries.length === 0){
+        listEl.innerHTML = `<em style="color:#666;">No completed runs yet — be the first!</em>`;
+        return;
+      }
+      listEl.innerHTML = entries.map((e,i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;
+          border-bottom:1px solid #1c1c1c;">
+          <span style="width:26px;color:${i===0?'#ffd54f':i===1?'#b0bec5':i===2?'#d7854a':'#666'};
+            font-weight:800;">${i+1}</span>
+          <span style="flex:1;">${e.name}</span>
+          <span style="color:#888;font-size:12px;">${e.stageCount} stages</span>
+          <span style="font-weight:700;color:#4caf50;">${formatLbTime(e.elapsedSeconds)}</span>
+        </div>
+      `).join("");
+    })
+    .catch(err => { listEl.innerHTML = `<span style="color:#ff8a80;">Couldn't load: ${err.message}</span>`; });
+}
+document.getElementById("leaderboard-refresh").addEventListener("click", loadLeaderboard);
+document.querySelector('[data-tab="leaderboard"]').addEventListener("click", loadLeaderboard);
+
+// ---------- EXPORT HISTORY ----------
+document.getElementById("export-history").addEventListener("click", () => {
+  const plainText = historyEntries.map(l => l.replace(/<[^>]+>/g, "")).join("\n");
+  const blob = new Blob([`MindReader session — room ${roomId}\n${new Date().toLocaleString()}\n\n${plainText}`], {type:"text/plain"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `mindreader-session-${roomId}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ---------- PANIC / RECAP ----------
+document.getElementById("panic-btn").addEventListener("click", () => {
+  if(!roomRef) return;
+  if(!confirm("This immediately blanks their screen and ends the session. Continue?")) return;
+  roomRef.update({ status: "panic" });
+  addHistory(`<span style="color:#e53935;">🚨 Panic button pressed</span> — session ended`);
+});
+
+document.getElementById("recap-btn").addEventListener("click", () => {
+  if(!roomRef) return;
+  const questionsAsked = historyEntries.filter(l => l.includes("You asked:")).length;
+  const gamesStarted = historyEntries.filter(l => l.includes("Started")).length;
+  const rigged = historyEntries.filter(l => l.includes("Rigged:")).length;
+  const recapHtml = `
+    <p>Questions asked: <strong>${questionsAsked}</strong></p>
+    <p>Games played: <strong>${gamesStarted}</strong></p>
+    <p>Things secretly rigged: <strong>${rigged}</strong> 😏</p>
+    <p style="color:#888;margin-top:12px;">Thanks for playing MindReader.</p>
+  `;
+  roomRef.update({ status: "recap", recapHtml });
+  addHistory(`<span style="color:#aaa;">🏁 Ended session with recap</span>`);
+});
+</script>
+</body>
+</html>
