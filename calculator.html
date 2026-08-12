@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Terminal Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600&display=swap');
+
+  :root{
+    --black:#050705;
+    --panel:#0b0f0c;
+    --panel-2:#0f1510;
+    --green-1:#39ff8f;
+    --green-2:#1fae5c;
+    --green-dim:#0f5c34;
+    --green-glow: rgba(57,255,143,0.35);
+    --line: #163021;
+    --key-shadow: #010301;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{
+    margin:0;
+    height:100%;
+    background:
+      radial-gradient(circle at 50% 0%, #0c130d 0%, var(--black) 60%);
+    font-family:'JetBrains Mono', monospace;
+    color:var(--green-1);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+
+  .rig{
+    width:100%;
+    max-width:380px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:10px;
+    padding:0 4px;
+  }
+  .brand .name{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:13px;
+    letter-spacing:0.25em;
+    text-transform:uppercase;
+    color:var(--green-2);
+  }
+  .brand .id{
+    font-size:10px;
+    color:var(--green-dim);
+    letter-spacing:0.1em;
+  }
+
+  .unit{
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:16px;
+    box-shadow:
+      0 0 0 1px #000 inset,
+      0 30px 60px -20px rgba(0,0,0,0.8),
+      0 0 40px -10px var(--green-glow);
+    position:relative;
+    overflow:hidden;
+  }
+  .unit::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(57,255,143,0.025) 0px,
+      rgba(57,255,143,0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    pointer-events:none;
+  }
+
+  .modeswitch{
+    display:flex;
+    gap:6px;
+    margin-bottom:12px;
+    background:#000;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:4px;
+  }
+  .modeswitch button{
+    flex:1;
+    background:transparent;
+    border:none;
+    color:var(--green-dim);
+    font-family:'Space Grotesk', sans-serif;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    padding:8px 4px;
+    border-radius:7px;
+    cursor:pointer;
+    transition:all .18s ease;
+  }
+  .modeswitch button.active{
+    background: linear-gradient(180deg, #123322, #0a1c14);
+    color:var(--green-1);
+    box-shadow: 0 0 12px -2px var(--green-glow), inset 0 0 0 1px var(--green-dim);
+  }
+
+  .display{
+    background:#010401;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 16px 14px;
+    margin-bottom:14px;
+    text-align:right;
+    position:relative;
+    min-height:86px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+  }
+  .display .expr{
+    font-size:12px;
+    color:var(--green-dim);
+    min-height:16px;
+    letter-spacing:0.02em;
+    word-break:break-all;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .display .result{
+    font-size:34px;
+    font-weight:500;
+    color:var(--green-1);
+    text-shadow: 0 0 14px var(--green-glow), 0 0 2px var(--green-1);
+    letter-spacing:0.01em;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .display .rad-indicator{
+    position:absolute;
+    top:10px;
+    left:14px;
+    font-size:9px;
+    letter-spacing:0.15em;
+    color:var(--green-dim);
+  }
+
+  .pad{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:8px;
+  }
+  .pad.sci{
+    grid-template-columns:repeat(5, 1fr);
+  }
+
+  button.key{
+    font-family:'JetBrains Mono', monospace;
+    font-size:15px;
+    padding:14px 0;
+    border-radius:9px;
+    border:1px solid #04120a;
+    background: linear-gradient(180deg, #0c1a11, #081209);
+    color:var(--green-1);
+    cursor:pointer;
+    box-shadow: 0 3px 0 var(--key-shadow), 0 4px 8px rgba(0,0,0,0.5);
+    transition: transform .06s ease, box-shadow .06s ease, background .15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button.key:active{
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--key-shadow), 0 2px 4px rgba(0,0,0,0.5);
+  }
+  button.key.fn{
+    color:var(--green-2);
+    background: linear-gradient(180deg, #0a1510, #06100b);
+    font-size:12.5px;
+  }
+  button.key.op{
+    color:#04140b;
+    background: linear-gradient(180deg, #4dffa0, #22c979);
+    font-weight:700;
+    box-shadow: 0 3px 0 #0d5230, 0 4px 10px rgba(34,201,121,0.35);
+  }
+  button.key.op:active{
+    box-shadow: 0 1px 0 #0d5230, 0 2px 4px rgba(34,201,121,0.35);
+  }
+  button.key.wide{
+    grid-column: span 2;
+  }
+  button.key.eq{
+    color:#04140b;
+    background: linear-gradient(180deg, #39ff8f, #0fae5c);
+    font-weight:700;
+    box-shadow: 0 3px 0 #063d22, 0 4px 12px rgba(57,255,143,0.4);
+  }
+
+  .foot{
+    text-align:center;
+    margin-top:10px;
+    font-size:9px;
+    letter-spacing:0.15em;
+    color:var(--green-dim);
+    text-transform:uppercase;
+  }
+
+  @media (max-width:400px){
+    .display .result{font-size:28px;}
+    button.key{font-size:13px; padding:12px 0;}
+    button.key.fn{font-size:11px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="rig">
+  <div class="brand">
+    <span class="name">Nightfield // Calc</span>
+    <span class="id">MODEL NF-02</span>
+  </div>
+
+  <div class="unit">
+    <div class="modeswitch">
+      <button id="btn-simple" class="active">Simple</button>
+      <button id="btn-sci">Scientific</button>
+    </div>
+
+    <div class="display">
+      <span class="rad-indicator" id="rad-indicator">DEG</span>
+      <div class="expr" id="expr">&nbsp;</div>
+      <div class="result" id="result">0</div>
+    </div>
+
+    <div class="pad" id="pad"></div>
+  </div>
+
+  <div class="foot">All systems phosphor-green</div>
+</div>
+
+<script>
+(function(){
+  const exprEl = document.getElementById('expr');
+  const resultEl = document.getElementById('result');
+  const pad = document.getElementById('pad');
+  const btnSimple = document.getElementById('btn-simple');
+  const btnSci = document.getElementById('btn-sci');
+  const radIndicator = document.getElementById('rad-indicator');
+
+  let mode = 'simple';
+  let expr = '';
+  let justEvaluated = false;
+  let isDeg = true;
+
+  const simpleKeys = [
+    {l:'C', t:'fn', a:'clear'},
+    {l:'⌫', t:'fn', a:'back'},
+    {l:'%', t:'fn', a:'percent'},
+    {l:'÷', t:'op', a:'op', v:'/'},
+    {l:'7', t:'num'}, {l:'8', t:'num'}, {l:'9', t:'num'},
+    {l:'×', t:'op', a:'op', v:'*'},
+    {l:'4', t:'num'}, {l:'5', t:'num'}, {l:'6', t:'num'},
+    {l:'−', t:'op', a:'op', v:'-'},
+    {l:'1', t:'num'}, {l:'2', t:'num'}, {l:'3', t:'num'},
+    {l:'+', t:'op', a:'op', v:'+'},
+    {l:'±', t:'fn', a:'negate'}, {l:'0', t:'num'}, {l:'.', t:'num'},
+    {l:'=', t:'eq', a:'equals'}
+  ];
+
+  const sciKeys = [
+    {l:'DEG', t:'fn', a:'toggledeg', id:'deg-key'}, {l:'(', t:'fn', a:'raw', v:'('}, {l:')', t:'fn', a:'raw', v:')'}, {l:'C', t:'fn', a:'clear'}, {l:'⌫', t:'fn', a:'back'},
+    {l:'sin', t:'fn', a:'func', v:'sin'}, {l:'cos', t:'fn', a:'func', v:'cos'}, {l:'tan', t:'fn', a:'func', v:'tan'}, {l:'π', t:'fn', a:'const', v:'π'}, {l:'e', t:'fn', a:'const', v:'e'},
+    {l:'x²', t:'fn', a:'square'}, {l:'√', t:'fn', a:'func', v:'√'}, {l:'ln', t:'fn', a:'func', v:'ln'}, {l:'log', t:'fn', a:'func', v:'log'}, {l:'%', t:'fn', a:'percent'},
+    {l:'7', t:'num'}, {l:'8', t:'num'}, {l:'9', t:'num'}, {l:'÷', t:'op', a:'op', v:'/'}, {l:'xʸ', t:'fn', a:'raw', v:'^'},
+    {l:'4', t:'num'}, {l:'5', t:'num'}, {l:'6', t:'num'}, {l:'×', t:'op', a:'op', v:'*'}, {l:'1/x', t:'fn', a:'inv'},
+    {l:'1', t:'num'}, {l:'2', t:'num'}, {l:'3', t:'num'}, {l:'−', t:'op', a:'op', v:'-'}, {l:'±', t:'fn', a:'negate'},
+    {l:'0', t:'num', extra:'wide'}, {l:'.', t:'num'}, {l:'=', t:'eq', a:'equals'}, {l:'+', t:'op', a:'op', v:'+'}
+  ];
+
+  function render(){
+    pad.className = 'pad' + (mode === 'sci' ? ' sci' : '');
+    pad.innerHTML = '';
+    const keys = mode === 'sci' ? sciKeys : simpleKeys;
+    keys.forEach(k => {
+      const b = document.createElement('button');
+      b.className = 'key ' + k.t + (k.extra ? ' ' + k.extra : '');
+      b.textContent = k.l;
+      if(k.id) b.id = k.id;
+      b.addEventListener('click', () => handle(k));
+      pad.appendChild(b);
+    });
+    radIndicator.style.display = mode === 'sci' ? 'block' : 'none';
+    updateDegLabel();
+  }
+
+  function updateDegLabel(){
+    radIndicator.textContent = isDeg ? 'DEG' : 'RAD';
+    const dk = document.getElementById('deg-key');
+    if(dk) dk.textContent = isDeg ? 'DEG' : 'RAD';
+  }
+
+  function refreshDisplay(){
+    exprEl.textContent = expr ? expr : '\u00a0';
+  }
+
+  function safeEval(str){
+    let s = str
+      .replace(/π/g, '(Math.PI)')
+      .replace(/√\(/g, 'Math.sqrt(')
+      .replace(/√/g, 'Math.sqrt')
+      .replace(/ln\(/g, 'Math.log(')
+      .replace(/ln/g, 'Math.log')
+      .replace(/log\(/g, 'log10(')
+      .replace(/log/g, 'log10')
+      .replace(/\^/g, '**')
+      .replace(/e(?![a-zA-Z])/g, '(Math.E)');
+
+    const trig = isDeg
+      ? { sin:'sinDeg', cos:'cosDeg', tan:'tanDeg' }
+      : { sin:'Math.sin', cos:'Math.cos', tan:'Math.tan' };
+    s = s.replace(/sin\(/g, trig.sin + '(');
+    s = s.replace(/cos\(/g, trig.cos + '(');
+    s = s.replace(/tan\(/g, trig.tan + '(');
+    s = s.replace(/sin(?!\()/g, trig.sin);
+    s = s.replace(/cos(?!\()/g, trig.cos);
+    s = s.replace(/tan(?!\()/g, trig.tan);
+
+    const sinDeg = x => Math.sin(x * Math.PI / 180);
+    const cosDeg = x => Math.cos(x * Math.PI / 180);
+    const tanDeg = x => Math.tan(x * Math.PI / 180);
+    const log10 = x => Math.log(x) / Math.LN10;
+
+    // eslint-disable-next-line no-new-func
+    const fn = new Function('sinDeg','cosDeg','tanDeg','log10', 'return (' + s + ')');
+    return fn(sinDeg, cosDeg, tanDeg, log10);
+  }
+
+  function formatNum(n){
+    if(!isFinite(n)) return 'Error';
+    if(Number.isInteger(n)) return n.toString();
+    return parseFloat(n.toFixed(10)).toString();
+  }
+
+  function handle(k){
+    if(k.t === 'num'){
+      if(justEvaluated){ expr = ''; justEvaluated = false; }
+      expr += k.l;
+      refreshDisplay();
+      updateLive();
+      return;
+    }
+    switch(k.a){
+      case 'clear':
+        expr = '';
+        resultEl.textContent = '0';
+        justEvaluated = false;
+        break;
+      case 'back':
+        expr = expr.slice(0, -1);
+        refreshDisplay();
+        updateLive();
+        break;
+      case 'op':
+        if(justEvaluated) justEvaluated = false;
+        expr += k.v;
+        refreshDisplay();
+        break;
+      case 'raw':
+        if(justEvaluated){ expr = ''; justEvaluated = false; }
+        expr += k.v;
+        refreshDisplay();
+        break;
+      case 'func':
+        if(justEvaluated){ expr = ''; justEvaluated = false; }
+        expr += k.v + '(';
+        refreshDisplay();
+        break;
+      case 'const':
+        if(justEvaluated){ expr = ''; justEvaluated = false; }
+        expr += k.v;
+        refreshDisplay();
+        updateLive();
+        break;
+      case 'negate':
+        if(expr === ''){ break; }
+        expr = '(-1)*(' + expr + ')';
+        refreshDisplay();
+        updateLive();
+        break;
+      case 'square':
+        expr = '(' + expr + ')^2';
+        refreshDisplay();
+        updateLive();
+        break;
+      case 'inv':
+        expr = '1/(' + expr + ')';
+        refreshDisplay();
+        updateLive();
+        break;
+      case 'percent':
+        expr = '(' + expr + ')/100';
+        refreshDisplay();
+        updateLive();
+        break;
+      case 'toggledeg':
+        isDeg = !isDeg;
+        updateDegLabel();
+        updateLive();
+        break;
+      case 'equals':
+        try{
+          const val = safeEval(expr);
+          resultEl.textContent = formatNum(val);
+          justEvaluated = true;
+        }catch(e){
+          resultEl.textContent = 'Error';
+        }
+        break;
+    }
+  }
+
+  function updateLive(){
+    if(!expr){ resultEl.textContent = '0'; return; }
+    try{
+      const val = safeEval(expr);
+      if(typeof val === 'number' && isFinite(val)){
+        resultEl.textContent = formatNum(val);
+      }
+    }catch(e){
+      // keep previous result while expression is incomplete
+    }
+  }
+
+  btnSimple.addEventListener('click', () => {
+    mode = 'simple';
+    btnSimple.classList.add('active');
+    btnSci.classList.remove('active');
+    render();
+    refreshDisplay();
+  });
+  btnSci.addEventListener('click', () => {
+    mode = 'sci';
+    btnSci.classList.add('active');
+    btnSimple.classList.remove('active');
+    render();
+    refreshDisplay();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key >= '0' && e.key <= '9'){ handle({t:'num', l:e.key}); }
+    else if(e.key === '.'){ handle({t:'num', l:'.'}); }
+    else if(e.key === '+'){ handle({a:'op', v:'+'}); }
+    else if(e.key === '-'){ handle({a:'op', v:'-'}); }
+    else if(e.key === '*'){ handle({a:'op', v:'*'}); }
+    else if(e.key === '/'){ e.preventDefault(); handle({a:'op', v:'/'}); }
+    else if(e.key === 'Enter' || e.key === '='){ handle({a:'equals'}); }
+    else if(e.key === 'Backspace'){ handle({a:'back'}); }
+    else if(e.key === 'Escape'){ handle({a:'clear'}); }
+  });
+
+  render();
+  refreshDisplay();
+})();
+</script>
+
+</body>
+</html>
