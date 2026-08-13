@@ -400,7 +400,7 @@ function loadFirebase() {
 // ── LOAD g (from uploaded file — untouched) ──
 async function loadg() {
     try {
-        const r   = await fetch('https://api.github.com/repos/Idonotknowhowtocodeyet/mongles-pull-g/git/trees/main');
+        const r   = await fetch('https://api.github.com/repos/Idonotknowhowtocodeyet/mongles-pull-games/git/trees/main');
         const d   = await r.json();
         if (!d.tree) throw new Error(d.message || 'No tree in response');
 
@@ -411,7 +411,7 @@ async function loadg() {
             const raw  = f.path.replace(/\.html?$/i,'');
             const name = raw.replace(/[-_]+/g,' ').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/\b\w/g,c=>c.toUpperCase()).trim();
             const tags = autoTag(name);
-            return { name, nameLow:name.toLowerCase(), url:`https://raw.githack.com/Idonotknowhowtocodeyet/mongles-pull-g/main/${f.path}`, tags };
+            return { name, nameLow:name.toLowerCase(), url:`https://raw.githack.com/Idonotknowhowtocodeyet/mongles-pull-games/main/${f.path}`, tags };
         }).sort((a,b) => a.name.localeCompare(b.name));
 
         ALL.forEach(g => g.tags.forEach(t => allTags.add(t)));
