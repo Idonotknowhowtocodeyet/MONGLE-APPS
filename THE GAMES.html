@@ -179,7 +179,7 @@ nav{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(4,
 <div id="app">
   <nav>
     <div class="brand">MONGLE_OS <em>v10</em></div>
-    <input id="search" type="text" placeholder="/ search games..." autocomplete="off">
+    <input id="search" type="text" placeholder="/ search g..." autocomplete="off">
     <div class="nav-right">
       <span class="dot"></span>
       <span id="online-txt">-- online</span>
@@ -198,7 +198,7 @@ nav{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(4,
   </div>
 
   <div id="grid-wrap">
-    <div id="grid"><div class="msg"><b>[ ]</b>LOADING GAMES...</div></div>
+    <div id="grid"><div class="msg"><b>[ ]</b>LOADING g...</div></div>
     <div id="sentinel"></div>
   </div>
 </div>
@@ -224,7 +224,7 @@ nav{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(4,
   </div>
   <div class="sp-body">
     <div class="sp-section">
-      <h4>OPEN GAMES AS</h4>
+      <h4>OPEN g AS</h4>
       <div class="radio-group" id="open-mode-group">
         <label class="radio-opt active" data-mode="tab">
           <input type="radio" name="mode" value="tab" checked>
@@ -360,7 +360,7 @@ setTimeout(() => {
     document.getElementById('app').style.display  = 'flex';
     initPresence();
     loadFirebase();
-    loadGames();
+    loadg();
     restoreSettings();
 }, 1900);
 
@@ -397,10 +397,10 @@ function loadFirebase() {
     }, err => console.error('userfavs listener:', err));
 }
 
-// ── LOAD GAMES (from uploaded file — untouched) ──
-async function loadGames() {
+// ── LOAD g (from uploaded file — untouched) ──
+async function loadg() {
     try {
-        const r   = await fetch('https://api.github.com/repos/Idonotknowhowtocodeyet/mongles-pull-games/git/trees/main');
+        const r   = await fetch('https://api.github.com/repos/Idonotknowhowtocodeyet/mongles-pull-g/git/trees/main');
         const d   = await r.json();
         if (!d.tree) throw new Error(d.message || 'No tree in response');
 
@@ -411,14 +411,14 @@ async function loadGames() {
             const raw  = f.path.replace(/\.html?$/i,'');
             const name = raw.replace(/[-_]+/g,' ').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/\b\w/g,c=>c.toUpperCase()).trim();
             const tags = autoTag(name);
-            return { name, nameLow:name.toLowerCase(), url:`https://raw.githack.com/Idonotknowhowtocodeyet/mongles-pull-games/main/${f.path}`, tags };
+            return { name, nameLow:name.toLowerCase(), url:`https://raw.githack.com/Idonotknowhowtocodeyet/mongles-pull-g/main/${f.path}`, tags };
         }).sort((a,b) => a.name.localeCompare(b.name));
 
         ALL.forEach(g => g.tags.forEach(t => allTags.add(t)));
         drawTagBar();
         applyFilters();
 
-        onValue(ref(db,'games'), snap => {
+        onValue(ref(db,'g'), snap => {
             if (!snap.exists()) return;
             const extras = [];
             snap.forEach(c => {
@@ -459,7 +459,7 @@ function applyFilters() {
         const bf = fk.has(gkey(b.name)) ? 0 : 1;
         return af !== bf ? af-bf : a.name.localeCompare(b.name);
     });
-    document.getElementById('total-txt').textContent = shown.length+' games';
+    document.getElementById('total-txt').textContent = shown.length+' g';
     resetGrid(); renderBatch();
 }
 
@@ -470,7 +470,7 @@ function renderBatch() {
     const grid = document.getElementById('grid');
     const start = rendered, end = Math.min(start+BATCH, shown.length);
     if (start >= shown.length) {
-        if (!shown.length) grid.innerHTML='<div class="msg"><b>∅</b>NO GAMES FOUND</div>';
+        if (!shown.length) grid.innerHTML='<div class="msg"><b>∅</b>NO g FOUND</div>';
         return;
     }
     const fk = new Set(Object.keys(userFavs));
@@ -524,7 +524,7 @@ document.getElementById('search').addEventListener('input', () => { clearTimeout
 
 // ── RANDOM ──
 window.pickRandom = () => {
-    if (!shown.length) { showToast('no games yet'); return; }
+    if (!shown.length) { showToast('no g yet'); return; }
     const g = shown[Math.floor(Math.random()*shown.length)];
     showToast('>> '+g.name);
     const cards = document.querySelectorAll('.card');
@@ -594,7 +594,7 @@ function drawLb() {
         .filter(x=>x.n>0)
         .sort((a,b)=>b.n-a.n)
         .slice(0,20);
-    if (!rows.length) { body.innerHTML='<div class="lb-empty">no data yet — play some games!</div>'; return; }
+    if (!rows.length) { body.innerHTML='<div class="lb-empty">no data yet — play some g!</div>'; return; }
     const max = rows[0].n;
     body.innerHTML = rows.map((row,i)=>{
         const g = ALL.find(x=>gkey(x.name)===row.k);
